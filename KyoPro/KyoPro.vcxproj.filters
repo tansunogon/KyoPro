@@ -16,6 +16,9 @@
     <Filter Include="library">
       <UniqueIdentifier>{bb566197-e807-42a1-9a05-7113a1b92569}</UniqueIdentifier>
     </Filter>
+    <Filter Include="snippet">
+      <UniqueIdentifier>{718fdc27-e9b8-4f9b-9a65-1d0359c01954}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -41,5 +44,10 @@
     <Text Include="input.txt">
       <Filter>ソース ファイル</Filter>
     </Text>
+  </ItemGroup>
+  <ItemGroup>
+    <Xsd Include="test.xsd">
+      <Filter>snippet</Filter>
+    </Xsd>
   </ItemGroup>
 </Project>
