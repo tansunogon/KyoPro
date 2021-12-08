@@ -13,28 +13,25 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="library">
-      <UniqueIdentifier>{bb566197-e807-42a1-9a05-7113a1b92569}</UniqueIdentifier>
-    </Filter>
     <Filter Include="snippet">
       <UniqueIdentifier>{718fdc27-e9b8-4f9b-9a65-1d0359c01954}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="snippet\lib">
+      <UniqueIdentifier>{70671e52-d11e-4186-adec-8c45596de35c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="snippet\fun">
+      <UniqueIdentifier>{6708706d-fb5e-4b94-b5c4-3f90a991bff8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="snippet\etc">
+      <UniqueIdentifier>{d62351c5-8496-4c72-8d26-f7267e38fd3e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="snippet\inout">
+      <UniqueIdentifier>{6d15e472-80f7-4ca9-badf-0adcd38d57ae}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
       <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="mod.cpp">
-      <Filter>library</Filter>
-    </ClCompile>
-    <ClCompile Include="eratos.cpp">
-      <Filter>library</Filter>
-    </ClCompile>
-    <ClCompile Include="gcd.cpp">
-      <Filter>library</Filter>
-    </ClCompile>
-    <ClCompile Include="floor.cpp">
-      <Filter>library</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -46,8 +43,74 @@
     </Text>
   </ItemGroup>
   <ItemGroup>
-    <Xsd Include="test.xsd">
-      <Filter>snippet</Filter>
-    </Xsd>
+    <None Include="snippet\liberatos.snippet">
+      <Filter>snippet\lib</Filter>
+    </None>
+    <None Include="snippet\libgcd.snippet">
+      <Filter>snippet\lib</Filter>
+    </None>
+    <None Include="snippet\libmod.snippet">
+      <Filter>snippet\lib</Filter>
+    </None>
+    <None Include="snippet\funffsum.snippet">
+      <Filter>snippet\fun</Filter>
+    </None>
+    <None Include="snippet\funfsum.snippet">
+      <Filter>snippet\fun</Filter>
+    </None>
+    <None Include="snippet\chmax.snippet">
+      <Filter>snippet\etc</Filter>
+    </None>
+    <None Include="snippet\chmin.snippet">
+      <Filter>snippet\etc</Filter>
+    </None>
+    <None Include="snippet\ll.snippet">
+      <Filter>snippet\etc</Filter>
+    </None>
+    <None Include="snippet\rep.snippet">
+      <Filter>snippet\etc</Filter>
+    </None>
+    <None Include="snippet\in1.snippet">
+      <Filter>snippet\inout</Filter>
+    </None>
+    <None Include="snippet\in2.snippet">
+      <Filter>snippet\inout</Filter>
+    </None>
+    <None Include="snippet\in3.snippet">
+      <Filter>snippet\inout</Filter>
+    </None>
+    <None Include="snippet\in4.snippet">
+      <Filter>snippet\inout</Filter>
+    </None>
+    <None Include="snippet\inl1.snippet">
+      <Filter>snippet\inout</Filter>
+    </None>
+    <None Include="snippet\inl2.snippet">
+      <Filter>snippet\inout</Filter>
+    </None>
+    <None Include="snippet\inl3.snippet">
+      <Filter>snippet\inout</Filter>
+    </None>
+    <None Include="snippet\inl4.snippet">
+      <Filter>snippet\inout</Filter>
+    </None>
+    <None Include="snippet\out.snippet">
+      <Filter>snippet\inout</Filter>
+    </None>
+    <None Include="snippet\vec1.snippet">
+      <Filter>snippet\inout</Filter>
+    </None>
+    <None Include="snippet\vec2.snippet">
+      <Filter>snippet\inout</Filter>
+    </None>
+    <None Include="snippet\vec3.snippet">
+      <Filter>snippet\inout</Filter>
+    </None>
+    <None Include="snippet\vec4.snippet">
+      <Filter>snippet\inout</Filter>
+    </None>
+    <None Include="snippet\yesno.snippet">
+      <Filter>snippet\inout</Filter>
+    </None>
   </ItemGroup>
 </Project>
