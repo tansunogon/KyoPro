@@ -112,5 +112,8 @@
     <None Include="snippet\ifout.snippet">
       <Filter>snippet\inout</Filter>
     </None>
+    <None Include="snippet\repr.snippet">
+      <Filter>snippet\etc</Filter>
+    </None>
   </ItemGroup>
 </Project>

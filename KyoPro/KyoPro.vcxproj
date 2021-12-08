@@ -164,6 +164,7 @@
     <None Include="snippet\ll.snippet" />
     <None Include="snippet\out.snippet" />
     <None Include="snippet\rep.snippet" />
+    <None Include="snippet\repr.snippet" />
     <None Include="snippet\vec1.snippet" />
     <None Include="snippet\vec2.snippet" />
     <None Include="snippet\vec3.snippet" />

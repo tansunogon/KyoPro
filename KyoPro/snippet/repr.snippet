@@ -5,27 +5,35 @@
       <SnippetTypes>
         <SnippetType>Expansion</SnippetType>
       </SnippetTypes>
-      <Title>out</Title>
+      <Title>repr</Title>
       <Author>
       </Author>
       <Description>
       </Description>
       <HelpUrl>
       </HelpUrl>
-      <Shortcut>out</Shortcut>
+      <Shortcut>repr</Shortcut>
     </Header>
     <Snippet>
       <Declarations>
         <Literal Editable="true">
-          <ID>ans</ID>
-          <ToolTip>ans</ToolTip>
-          <Default>ans</Default>
+          <ID>i</ID>
+          <ToolTip>i</ToolTip>
+          <Default>i</Default>
+          <Function>
+          </Function>
+        </Literal>
+        <Literal Editable="true">
+          <ID>N</ID>
+          <ToolTip>N</ToolTip>
+          <Default>N</Default>
           <Function>
           </Function>
         </Literal>
       </Declarations>
-      <Code Language="cpp" Delimiter="$"><![CDATA[cout << $ans$ << '\n';
-$end$]]></Code>
+      <Code Language="cpp" Delimiter="$"><![CDATA[for (int $i$ = $N$ - 1; $i$ >= 0; --$i$) {
+    $end$
+}]]></Code>
     </Snippet>
   </CodeSnippet>
 </CodeSnippets>
