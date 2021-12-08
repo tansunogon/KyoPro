@@ -5,14 +5,14 @@
       <SnippetTypes>
         <SnippetType>Expansion</SnippetType>
       </SnippetTypes>
-      <Title>yesno</Title>
+      <Title>ifout</Title>
       <Author>
       </Author>
       <Description>
       </Description>
       <HelpUrl>
       </HelpUrl>
-      <Shortcut>yesno</Shortcut>
+      <Shortcut>ifout</Shortcut>
     </Header>
     <Snippet>
       <Declarations>
@@ -23,11 +23,25 @@
           <Function>
           </Function>
         </Literal>
+        <Literal Editable="true">
+          <ID>"Yes\n"</ID>
+          <ToolTip>"Yes\n"</ToolTip>
+          <Default>"Yes\n"</Default>
+          <Function>
+          </Function>
+        </Literal>
+        <Literal Editable="true">
+          <ID>"No\n"</ID>
+          <ToolTip>"No\n"</ToolTip>
+          <Default>"No\n"</Default>
+          <Function>
+          </Function>
+        </Literal>
       </Declarations>
       <Code Language="cpp" Delimiter="$"><![CDATA[if ($cond$) {
-	cout << "Yes\n";
+	cout << $"Yes\n"$;
 } else {
-	cout << "No\n";
+	cout << $"No\n"$;
 }
 $end$]]></Code>
     </Snippet>

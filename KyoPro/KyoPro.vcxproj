@@ -149,6 +149,7 @@
     <None Include="snippet\chmin.snippet" />
     <None Include="snippet\funffsum.snippet" />
     <None Include="snippet\funfsum.snippet" />
+    <None Include="snippet\ifout.snippet" />
     <None Include="snippet\in1.snippet" />
     <None Include="snippet\in2.snippet" />
     <None Include="snippet\in3.snippet" />
@@ -167,7 +168,6 @@
     <None Include="snippet\vec2.snippet" />
     <None Include="snippet\vec3.snippet" />
     <None Include="snippet\vec4.snippet" />
-    <None Include="snippet\yesno.snippet" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

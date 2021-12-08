@@ -109,7 +109,7 @@
     <None Include="snippet\vec4.snippet">
       <Filter>snippet\inout</Filter>
     </None>
-    <None Include="snippet\yesno.snippet">
+    <None Include="snippet\ifout.snippet">
       <Filter>snippet\inout</Filter>
     </None>
   </ItemGroup>
