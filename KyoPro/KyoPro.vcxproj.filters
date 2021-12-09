@@ -127,5 +127,8 @@
     <None Include="snippet\dvec.snippet">
       <Filter>snippet\dec</Filter>
     </None>
+    <None Include="snippet\ddxdy.snippet">
+      <Filter>snippet\dec</Filter>
+    </None>
   </ItemGroup>
 </Project>
