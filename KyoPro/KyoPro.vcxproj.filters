@@ -28,6 +28,9 @@
     <Filter Include="snippet\inout">
       <UniqueIdentifier>{6d15e472-80f7-4ca9-badf-0adcd38d57ae}</UniqueIdentifier>
     </Filter>
+    <Filter Include="snippet\dec">
+      <UniqueIdentifier>{8beab1c7-8f05-4a87-899b-7490bc15e7d7}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -114,6 +117,15 @@
     </None>
     <None Include="snippet\repr.snippet">
       <Filter>snippet\etc</Filter>
+    </None>
+    <None Include="snippet\reprs.snippet">
+      <Filter>snippet\etc</Filter>
+    </None>
+    <None Include="snippet\reps.snippet">
+      <Filter>snippet\etc</Filter>
+    </None>
+    <None Include="snippet\dvec.snippet">
+      <Filter>snippet\dec</Filter>
     </None>
   </ItemGroup>
 </Project>

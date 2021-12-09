@@ -147,6 +147,7 @@
   <ItemGroup>
     <None Include="snippet\chmax.snippet" />
     <None Include="snippet\chmin.snippet" />
+    <None Include="snippet\dvec.snippet" />
     <None Include="snippet\funffsum.snippet" />
     <None Include="snippet\funfsum.snippet" />
     <None Include="snippet\ifout.snippet" />
@@ -165,6 +166,8 @@
     <None Include="snippet\out.snippet" />
     <None Include="snippet\rep.snippet" />
     <None Include="snippet\repr.snippet" />
+    <None Include="snippet\reprs.snippet" />
+    <None Include="snippet\reps.snippet" />
     <None Include="snippet\vec1.snippet" />
     <None Include="snippet\vec2.snippet" />
     <None Include="snippet\vec3.snippet" />
