@@ -172,6 +172,7 @@
     <None Include="snippet\libmod.snippet" />
     <None Include="snippet\ll.snippet" />
     <None Include="snippet\mat.snippet" />
+    <None Include="snippet\mats.snippet" />
     <None Include="snippet\out.snippet" />
     <None Include="snippet\rep.snippet" />
     <None Include="snippet\repr.snippet" />
