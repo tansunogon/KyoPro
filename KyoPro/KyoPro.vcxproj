@@ -160,6 +160,7 @@
     <None Include="snippet\inl2.snippet" />
     <None Include="snippet\inl3.snippet" />
     <None Include="snippet\inl4.snippet" />
+    <None Include="snippet\ins.snippet" />
     <None Include="snippet\liberatos.snippet" />
     <None Include="snippet\libgcd.snippet" />
     <None Include="snippet\libmod.snippet" />

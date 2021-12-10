@@ -130,5 +130,8 @@
     <None Include="snippet\ddxdy.snippet">
       <Filter>snippet\dec</Filter>
     </None>
+    <None Include="snippet\ins.snippet">
+      <Filter>snippet\inout</Filter>
+    </None>
   </ItemGroup>
 </Project>
