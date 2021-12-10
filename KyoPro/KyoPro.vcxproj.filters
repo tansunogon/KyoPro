@@ -133,5 +133,11 @@
     <None Include="snippet\ins.snippet">
       <Filter>snippet\inout</Filter>
     </None>
+    <None Include="snippet\in5.snippet">
+      <Filter>snippet\inout</Filter>
+    </None>
+    <None Include="snippet\in6.snippet">
+      <Filter>snippet\inout</Filter>
+    </None>
   </ItemGroup>
 </Project>

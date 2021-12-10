@@ -160,6 +160,8 @@
     <None Include="snippet\in2.snippet" />
     <None Include="snippet\in3.snippet" />
     <None Include="snippet\in4.snippet" />
+    <None Include="snippet\in5.snippet" />
+    <None Include="snippet\in6.snippet" />
     <None Include="snippet\inl1.snippet" />
     <None Include="snippet\inl2.snippet" />
     <None Include="snippet\inl3.snippet" />
