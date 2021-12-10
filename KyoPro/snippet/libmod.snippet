@@ -76,7 +76,7 @@
 		}
 		Mint operator/(const Mint &rhs) const
 		{
-			return Mint((v * rhs.inv()) % MOD);
+			return Mint((v * rhs.inv().v) % MOD);
 		}
 		Mint operator+=(const Mint &rhs)
 		{
@@ -95,7 +95,7 @@
 		}
 		Mint operator/=(const Mint &rhs)
 		{
-			v = (v * rhs.inv()) % MOD;
+			v = (v * rhs.inv().v) % MOD;
 			return *this;
 		}
 		friend std::ostream &operator<<(std::ostream &os, const Mint<MOD> obj)
