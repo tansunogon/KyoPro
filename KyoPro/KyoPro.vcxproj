@@ -151,6 +151,8 @@
   <ItemGroup>
     <None Include="snippet\chmax.snippet" />
     <None Include="snippet\chmin.snippet" />
+    <None Include="snippet\cmat.snippet" />
+    <None Include="snippet\cmats.snippet" />
     <None Include="snippet\ddxdy.snippet" />
     <None Include="snippet\dvec.snippet" />
     <None Include="snippet\funffsum.snippet" />
