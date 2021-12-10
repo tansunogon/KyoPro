@@ -142,5 +142,17 @@
     <None Include="snippet\mat.snippet">
       <Filter>snippet\inout</Filter>
     </None>
+    <None Include="snippet\vec1s.snippet">
+      <Filter>snippet\inout</Filter>
+    </None>
+    <None Include="snippet\vec2s.snippet">
+      <Filter>snippet\inout</Filter>
+    </None>
+    <None Include="snippet\vec3s.snippet">
+      <Filter>snippet\inout</Filter>
+    </None>
+    <None Include="snippet\vec4s.snippet">
+      <Filter>snippet\inout</Filter>
+    </None>
   </ItemGroup>
 </Project>

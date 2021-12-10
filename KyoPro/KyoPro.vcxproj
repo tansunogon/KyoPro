@@ -178,9 +178,13 @@
     <None Include="snippet\reprs.snippet" />
     <None Include="snippet\reps.snippet" />
     <None Include="snippet\vec1.snippet" />
+    <None Include="snippet\vec1s.snippet" />
     <None Include="snippet\vec2.snippet" />
+    <None Include="snippet\vec2s.snippet" />
     <None Include="snippet\vec3.snippet" />
+    <None Include="snippet\vec3s.snippet" />
     <None Include="snippet\vec4.snippet" />
+    <None Include="snippet\vec4s.snippet" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
