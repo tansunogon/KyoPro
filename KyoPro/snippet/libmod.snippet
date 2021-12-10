@@ -52,8 +52,8 @@
 	template<long long MOD>
 	struct Mint {
 		long long v;
-		Mint() : v() {};
-		Mint(long long v) : v(v) {};
+		Mint() : v() {}
+		Mint(long long v) : v(v) {}
 		Mint pow(long long index) const
 		{
 			return Mint(mod::pow(v, index, MOD));
