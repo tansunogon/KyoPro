@@ -149,6 +149,7 @@
     <Text Include="output.txt" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="snippet\all.snippet" />
     <None Include="snippet\chmax.snippet" />
     <None Include="snippet\chmin.snippet" />
     <None Include="snippet\cmat.snippet" />
