@@ -1,0 +1,140 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<CodeSnippets xmlns="http://schemas.microsoft.com/VisualStudio/2005/CodeSnippet">
+  <CodeSnippet Format="1.0.0">
+    <Header>
+      <SnippetTypes>
+        <SnippetType>Expansion</SnippetType>
+      </SnippetTypes>
+      <Title>libscanmat</Title>
+      <Author>
+      </Author>
+      <Description>
+      </Description>
+      <HelpUrl>
+      </HelpUrl>
+      <Shortcut>libscanmat</Shortcut>
+    </Header>
+    <Snippet>
+      <Code Language="cpp" Delimiter="$"><![CDATA[namespace scanmat {
+	// ret[i][j] = sum_{k<=i, l<=j} mat[k][l]
+	template<typename T>
+	vector<vector<T>> cumulative_sum(const vector<vector<T>> &mat)
+	{
+		vector scan = mat;
+		size_t h = scan.size();
+		size_t w = scan[0].size();
+		for (size_t i = 1; i < h; ++i) {
+			scan[i][0] += scan[i - 1][0];
+		}
+		for (size_t j = 1; j < w; ++j) {
+			scan[0][j] += scan[0][j - 1];
+		}
+		for (size_t i = 1; i < h; ++i) {
+			for (size_t j = 1; j < w; ++j) {
+				scan[i][j] += scan[i - 1][j] + scan[i][j - 1] - scan[i - 1][j - 1];
+			}
+		}
+		return scan;
+	}
+
+	// ret[i][j] = sum_{i<=k<i+h, j<=l<j+w} mat[k][l]
+	// ret.size() == mat.size();
+	// ret[0].size() == mat[0].size();
+	template<typename T>
+	vector<vector<T>> slide_sum(const vector<vector<T>> &mat, size_t h, size_t w)
+	{
+		assert(h > 0 && w > 0);
+		auto s = cumulative_sum(mat);
+		vector wsum = s;
+		size_t i_max = s.size() - 1;
+		size_t j_max = s[0].size() - 1;
+		for (size_t i = 0; i < s.size(); i++) {
+			for (size_t j = 0; j < s[0].size(); j++) {
+				size_t pi = i - 1;
+				size_t pj = j - 1;
+				size_t qi = min(i + h - 1, i_max);
+				size_t qj = min(j + w - 1, j_max);
+				T v0 = s[qi][qj];
+				T v1 = i == 0 ? 0 : s[pi][qj];
+				T v2 = j == 0 ? 0 : s[qi][pj];
+				T v3 = (i == 0 || j == 0) ? 0 : s[pi][pj];
+				wsum[i][j] = v0 - v1 - v2 + v3;
+			}
+		}
+		return wsum;
+	}
+
+	template<typename T, class Compare = less<T>>
+	struct SlideMin {
+		size_t k;
+		Compare cmp;
+		size_t count = 0;
+		deque<pair<size_t, T>> q;
+		SlideMin(size_t k) : SlideMin(k, less<T>{}) {}
+		SlideMin(size_t k, Compare c) : k(k), cmp(c) { assert(k > 0); }
+		T add(T v)
+		{
+			while (!q.empty() && !cmp(q.back().second, v)) {
+				q.pop_back();
+			}
+			q.emplace_back(count, v);
+			return forward();
+		}
+		T forward()
+		{
+			count++;
+			if (q.front().first + k < count) {
+				q.pop_front();
+			}
+			return q.front().second;
+		}
+	};
+
+	// ret[i][j] = min_{i<=k<i+h, j<=l<j+w} mat[k][l]
+	// ret.size() == mat.size() - h + 1;
+	// ret[0].size() == mat[0].size() - w + 1;
+	template<typename T, class Compare>
+	vector<vector<T>> slide_min(const vector<vector<T>> &mat, size_t h, size_t w, Compare cmp)
+	{
+		assert(h >= 1 && w >= 1);
+		assert(mat.size() >= h && mat[0].size() >= w);
+		size_t H = mat.size() - h + 1;
+		size_t W = mat[0].size() - w + 1;
+		size_t mW = mat[0].size();
+		vector<vector<T>> ret(H, vector<T>(W));
+		vector<SlideMin<T, Compare>> smin;
+		smin.reserve(mW);
+		for (size_t j = 0; j < mW; ++j) {
+			smin.emplace_back(h, cmp);
+		}
+		for (size_t i = 0; i < h - 1; ++i) {
+			for (size_t j = 0; j < mW; ++j) {
+				smin[j].add(mat[i][j]);
+			}
+		}
+		for (size_t i = 0; i < H; ++i) {
+			vector<T> vertical_h_min(mW);
+			for (size_t j = 0; j < mW; ++j) {
+				vertical_h_min[j] = smin[j].add(mat[i + h - 1][j]);
+			}
+			SlideMin<T, Compare> smin2(w, cmp);
+			for (size_t j = 0; j < w - 1; ++j) {
+				smin2.add(vertical_h_min[j]);
+			}
+			for (size_t j = 0; j < W; ++j) {
+				ret[i][j] = smin2.add(vertical_h_min[j + w - 1]);
+			}
+		}
+		return ret;
+	}
+
+	template<typename T>
+	vector<vector<T>> slide_min(const vector<vector<T>> &mat, size_t h, size_t w)
+	{
+		return slide_min<T, less<T>>(mat, h, w, less<T>{});
+	}
+}
+$end$]]></Code>
+    </Snippet>
+  </CodeSnippet>
+</CodeSnippets>

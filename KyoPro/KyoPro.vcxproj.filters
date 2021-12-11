@@ -166,5 +166,8 @@
     <None Include="snippet\libslidemin.snippet">
       <Filter>snippet\lib</Filter>
     </None>
+    <None Include="snippet\libscanmat.snippet">
+      <Filter>snippet\lib</Filter>
+    </None>
   </ItemGroup>
 </Project>
