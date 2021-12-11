@@ -235,5 +235,11 @@
     <None Include="snippet\lamsecond.snippet">
       <Filter>snippet\lambda</Filter>
     </None>
+    <None Include="snippet\yes.snippet">
+      <Filter>snippet\inout</Filter>
+    </None>
+    <None Include="snippet\no.snippet">
+      <Filter>snippet\inout</Filter>
+    </None>
   </ItemGroup>
 </Project>

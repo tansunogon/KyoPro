@@ -190,6 +190,7 @@
     <None Include="snippet\ll.snippet" />
     <None Include="snippet\mat.snippet" />
     <None Include="snippet\mats.snippet" />
+    <None Include="snippet\no.snippet" />
     <None Include="snippet\out.snippet" />
     <None Include="snippet\rep.snippet" />
     <None Include="snippet\repr.snippet" />
@@ -211,6 +212,7 @@
     <None Include="snippet\vecl3s.snippet" />
     <None Include="snippet\vecl4.snippet" />
     <None Include="snippet\vecl4s.snippet" />
+    <None Include="snippet\yes.snippet" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
