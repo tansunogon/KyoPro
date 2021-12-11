@@ -1,0 +1,56 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<CodeSnippets xmlns="http://schemas.microsoft.com/VisualStudio/2005/CodeSnippet">
+  <CodeSnippet Format="1.0.0">
+    <Header>
+      <SnippetTypes>
+        <SnippetType>Expansion</SnippetType>
+      </SnippetTypes>
+      <Title>funslidemin</Title>
+      <Author>
+      </Author>
+      <Description>
+      </Description>
+      <HelpUrl>
+      </HelpUrl>
+      <Shortcut>funslidemin</Shortcut>
+    </Header>
+    <Snippet>
+      <Code Language="cpp" Delimiter="$"><![CDATA[// ret[i] = min {v[i], v[i+1], ......, v[i+k-1]}
+// ...
+// ret[-2] = min {v[-2], v[-1]} (k >= 2), v[-2] (k == 1)
+// ret[-1] = v[-1]
+// ret.size() == v.size()
+template<typename T>
+vector<T> slide_min(const vector<T> &v, int k)
+{
+	assert(k >= 1);
+	vector<T> ret;
+	deque<int> q;
+	for (int i = 0; i < (int)v.size(); ++i) {
+		while (!q.empty()) {
+			if (v[q.back()] < v[i]) {
+				break;
+			}
+			q.pop_back();
+		}
+		q.push_back(i);
+		if (q.front() <= i - k) {
+			q.pop_front();
+		}
+		if (i >= k - 1) {
+			ret.push_back(v[q.front()]);
+		}
+	}
+	while (ret.size() < v.size()) {
+		int i = (int)ret.size();
+		if (q.front() < i) {
+			q.pop_front();
+		}
+		ret.push_back(v[q.front()]);
+	}
+	return ret;
+}
+$end$]]></Code>
+    </Snippet>
+  </CodeSnippet>
+</CodeSnippets>
