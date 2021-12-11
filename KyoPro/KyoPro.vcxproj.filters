@@ -169,5 +169,29 @@
     <None Include="snippet\libscanmat.snippet">
       <Filter>snippet\lib</Filter>
     </None>
+    <None Include="snippet\vecl1.snippet">
+      <Filter>snippet\inout</Filter>
+    </None>
+    <None Include="snippet\vecl1s.snippet">
+      <Filter>snippet\inout</Filter>
+    </None>
+    <None Include="snippet\vecl2.snippet">
+      <Filter>snippet\inout</Filter>
+    </None>
+    <None Include="snippet\vecl2s.snippet">
+      <Filter>snippet\inout</Filter>
+    </None>
+    <None Include="snippet\vecl3.snippet">
+      <Filter>snippet\inout</Filter>
+    </None>
+    <None Include="snippet\vecl3s.snippet">
+      <Filter>snippet\inout</Filter>
+    </None>
+    <None Include="snippet\vecl4.snippet">
+      <Filter>snippet\inout</Filter>
+    </None>
+    <None Include="snippet\vecl4s.snippet">
+      <Filter>snippet\inout</Filter>
+    </None>
   </ItemGroup>
 </Project>

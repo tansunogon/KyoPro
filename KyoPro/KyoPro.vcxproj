@@ -190,6 +190,14 @@
     <None Include="snippet\vec3s.snippet" />
     <None Include="snippet\vec4.snippet" />
     <None Include="snippet\vec4s.snippet" />
+    <None Include="snippet\vecl1.snippet" />
+    <None Include="snippet\vecl1s.snippet" />
+    <None Include="snippet\vecl2.snippet" />
+    <None Include="snippet\vecl2s.snippet" />
+    <None Include="snippet\vecl3.snippet" />
+    <None Include="snippet\vecl3s.snippet" />
+    <None Include="snippet\vecl4.snippet" />
+    <None Include="snippet\vecl4s.snippet" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
