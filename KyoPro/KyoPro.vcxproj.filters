@@ -31,6 +31,9 @@
     <Filter Include="snippet\dec">
       <UniqueIdentifier>{8beab1c7-8f05-4a87-899b-7490bc15e7d7}</UniqueIdentifier>
     </Filter>
+    <Filter Include="snippet\lambda">
+      <UniqueIdentifier>{eb62c406-c601-4582-81e3-48e5cca87248}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -228,6 +231,9 @@
     </None>
     <None Include="snippet\all.snippet">
       <Filter>snippet\etc</Filter>
+    </None>
+    <None Include="snippet\lamsecond.snippet">
+      <Filter>snippet\lambda</Filter>
     </None>
   </ItemGroup>
 </Project>
