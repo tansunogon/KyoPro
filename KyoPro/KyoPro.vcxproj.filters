@@ -163,5 +163,8 @@
     <None Include="snippet\cmats.snippet">
       <Filter>snippet\inout</Filter>
     </None>
+    <None Include="snippet\funslidemin.snippet">
+      <Filter>snippet\fun</Filter>
+    </None>
   </ItemGroup>
 </Project>

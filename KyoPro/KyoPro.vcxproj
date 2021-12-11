@@ -157,6 +157,7 @@
     <None Include="snippet\dvec.snippet" />
     <None Include="snippet\funffsum.snippet" />
     <None Include="snippet\funfsum.snippet" />
+    <None Include="snippet\funslidemin.snippet" />
     <None Include="snippet\ifout.snippet" />
     <None Include="snippet\in1.snippet" />
     <None Include="snippet\in2.snippet" />
