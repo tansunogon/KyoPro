@@ -187,6 +187,7 @@
     <None Include="snippet\liberatos.snippet" />
     <None Include="snippet\libgcd.snippet" />
     <None Include="snippet\libmod.snippet" />
+    <None Include="snippet\libuf.snippet" />
     <None Include="snippet\ll.snippet" />
     <None Include="snippet\mat.snippet" />
     <None Include="snippet\mats.snippet" />

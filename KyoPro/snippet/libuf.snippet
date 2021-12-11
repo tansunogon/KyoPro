@@ -1,0 +1,59 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<CodeSnippets xmlns="http://schemas.microsoft.com/VisualStudio/2005/CodeSnippet">
+  <CodeSnippet Format="1.0.0">
+    <Header>
+      <SnippetTypes>
+        <SnippetType>Expansion</SnippetType>
+      </SnippetTypes>
+      <Title>libuf</Title>
+      <Author>
+      </Author>
+      <Description>
+      </Description>
+      <HelpUrl>
+      </HelpUrl>
+      <Shortcut>libuf</Shortcut>
+    </Header>
+    <Snippet>
+      <Code Language="cpp" Delimiter="$"><![CDATA[// {0, 1, ......, sz-1} を素集合に分割して保持するデータ構造
+struct UnionFind {
+	// 非負の場合は、親のインデックスを表す
+	// 負の場合は、親がいないことを表す。値の絶対値は集合の要素数を表す
+	vector<int> parent;
+	UnionFind(size_t sz) : parent(sz, -1) {}
+	// x が属する集合と y が属する集合を併合する
+	// すでに同じ集合に属していれば false を返す
+	bool unite(int x, int y)
+	{
+		int px = find(x);
+		int py = find(y);
+		if (px == py) {
+			return false;
+		}
+		if (parent[px] > parent[py]) {
+			parent[py] += parent[px];
+			parent[px] = py;
+		} else {
+			parent[px] += parent[py];
+			parent[py] = px;
+		}
+		return true;
+	}
+	// 属している集合の親となっている要素を返す
+	int find(int x)
+	{
+		if (parent[x] < 0) {
+			return x;
+		}
+		return parent[x] = find(parent[x]);
+	}
+	// 属している集合のサイズを返す
+	int size(int x)
+	{
+		return -parent[find(x)];
+	}
+};
+$end$]]></Code>
+    </Snippet>
+  </CodeSnippet>
+</CodeSnippets>
