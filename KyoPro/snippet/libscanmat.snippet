@@ -113,16 +113,13 @@
 			}
 		}
 		for (size_t i = 0; i < H; ++i) {
-			vector<T> vertical_h_min(mW);
-			for (size_t j = 0; j < mW; ++j) {
-				vertical_h_min[j] = smin[j].add(mat[i + h - 1][j]);
-			}
 			SlideMin<T, Compare> smin2(w, cmp);
-			for (size_t j = 0; j < w - 1; ++j) {
-				smin2.add(vertical_h_min[j]);
-			}
-			for (size_t j = 0; j < W; ++j) {
-				ret[i][j] = smin2.add(vertical_h_min[j + w - 1]);
+			for (size_t j = 0; j < mW; ++j) {
+				if (j < w - 1) {
+					smin2.add(smin[j].add(mat[i + h - 1][j]));
+				} else {
+					ret[i][j - w + 1] = smin2.add(smin[j].add(mat[i + h - 1][j]));
+				}
 			}
 		}
 		return ret;
