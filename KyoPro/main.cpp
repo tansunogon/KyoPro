@@ -6,6 +6,7 @@
 #include <functional>
 #include <iomanip>
 #include <iostream>
+#include <numeric>
 #include <iterator>
 #include <set>
 #include <unordered_map>
