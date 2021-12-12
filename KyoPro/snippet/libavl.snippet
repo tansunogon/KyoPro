@@ -1,0 +1,198 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<CodeSnippets xmlns="http://schemas.microsoft.com/VisualStudio/2005/CodeSnippet">
+  <CodeSnippet Format="1.0.0">
+    <Header>
+      <SnippetTypes>
+        <SnippetType>Expansion</SnippetType>
+      </SnippetTypes>
+      <Title>libavl</Title>
+      <Author>
+      </Author>
+      <Description>
+      </Description>
+      <HelpUrl>
+      </HelpUrl>
+      <Shortcut>libavl</Shortcut>
+    </Header>
+    <Snippet>
+      <Code Language="cpp" Delimiter="$"><![CDATA[template <class Key, class Monoid, Monoid IDENT, class Op>
+struct AVLTreeNode {
+	AVLTreeNode *left;
+	AVLTreeNode *right;
+	Key key;
+	Monoid m;
+	Monoid sum_of_m;
+	int rank;
+	AVLTreeNode(Key key, Monoid value) :
+		left(nullptr),
+		right(nullptr),
+		key(key),
+		m(value),
+		sum_of_m(value),
+		rank(1) {}
+	~AVLTreeNode() { delete left; delete right; }
+	// 全ての要素の和を返す
+	Monoid sum() const
+	{
+		return sum_of_m;
+	}
+	// key 未満の value の和を返す
+	Monoid lower_sum(Key key) const
+	{
+		Monoid l_sum;
+		if (!(key < this->key) && !(this->key < key)) {
+			l_sum = this->left ? this->left->sum() : IDENT;
+		} else if (key < this->key) {
+			l_sum = this->left ? this->left->lower_sum(key) : IDENT;
+		} else {
+			l_sum = this->left ? this->left->sum() : IDENT;
+			l_sum = Op()(l_sum, this->m);
+			l_sum = Op()(l_sum, this->right ? this->right->lower_sum(key) : IDENT);
+		}
+		return l_sum;
+	}
+	// key に value を加算する
+	// key 未満の value の和を返す
+	Monoid insert(Key key, Monoid value, bool replace = false)
+	{
+		Monoid l_sum;
+		if (!(key < this->key) && !(this->key < key)) {
+			if (replace) {
+				this->m = value;
+				update_sum();
+			} else {
+				this->m = Op()(this->m, value);
+				this->sum_of_m = Op()(this->sum_of_m, value);
+			}
+			return this->left ? this->left->sum() : IDENT;
+		} else if (key < this->key) {
+			if (this->left) {
+				l_sum = this->left->insert(key, value);
+			} else {
+				this->left = new AVLTreeNode(key, value);
+				l_sum = IDENT;
+			}
+		} else {
+			l_sum = this->left ? this->left->sum() : IDENT;
+			l_sum = Op()(l_sum, this->m);
+			if (this->right) {
+				l_sum = Op()(l_sum, this->right->insert(key, value));
+			} else {
+				this->right = new AVLTreeNode(key, value);
+			}
+		}
+		update_sum();
+		int l_rank = left ? left->rank : 0;
+		int r_rank = right ? right->rank : 0;
+		this->rank = max(l_rank, r_rank) + 1;
+
+		if (l_rank > r_rank + 1) {
+			rotate_l();
+		} else if (r_rank > l_rank + 1) {
+			rotate_r();
+		}
+
+		return l_sum;
+	}
+	void update_sum()
+	{
+		Monoid l_sum = left ? left->sum() : IDENT;
+		Monoid r_sum = right ? right->sum() : IDENT;
+		sum_of_m = Op()(Op()(m, l_sum), r_sum);
+	}
+	void update_rank()
+	{
+		int l_rank = left ? left->rank : 0;
+		int r_rank = right ? right->rank : 0;
+		rank = max(l_rank, r_rank) + 1;
+	}
+	// left => new root
+	void rotate_l()
+	{
+		AVLTreeNode *ll = this->left->left;
+		AVLTreeNode *lr = this->left->right;
+		AVLTreeNode *r = this->right;
+
+		AVLTreeNode *root = this;
+		AVLTreeNode *node = this->left;
+		root->left = ll;
+		root->right = node;
+		node->left = lr;
+		node->right = r;
+		swap(root->key, node->key);
+		swap(root->m, node->m);
+		node->update_sum();
+		node->update_rank();
+		root->update_sum();
+		root->update_rank();
+	}
+	// right => new root
+	void rotate_r()
+	{
+		AVLTreeNode *rl = this->right->left;
+		AVLTreeNode *rr = this->right->right;
+		AVLTreeNode *l = this->left;
+
+		AVLTreeNode *root = this;
+		AVLTreeNode *node = this->right;
+		root->left = node;
+		root->right = rr;
+		node->left = l;
+		node->right = rl;
+		swap(root->key, node->key);
+		swap(root->m, node->m);
+		node->update_sum();
+		node->update_rank();
+		root->update_sum();
+		root->update_rank();
+	}
+};
+template <class Key = int, class Monoid = int, Monoid IDENT = Monoid(), class Op = plus<Monoid>>
+struct AVLTree {
+	AVLTreeNode<Key, Monoid, IDENT, Op> *root;
+	AVLTree() : root(nullptr) {}
+	~AVLTree() { delete root; }
+	// 全ての要素の和を返す
+	Monoid sum()
+	{
+		if (root) {
+			return root->sum();
+		} else {
+			return IDENT;
+		}
+	}
+	// key 未満の value の和を返す
+	Monoid lower_sum(Key key) const
+	{
+		if (root) {
+			return root->lower_sum(key);
+		} else {
+			return IDENT;
+		}
+	}
+	// key に value を加算する
+	// key 未満の value の和を返す
+	Monoid insert(Key key, Monoid value, bool replace = false)
+	{
+		if (root) {
+			return root->insert(key, value, replace);
+		} else {
+			root = new AVLTreeNode<Key, Monoid, IDENT, Op>(key, value);
+			return IDENT;
+		}
+	}
+	// key の要素を削除する (実際には IDENT で置き換える)
+	// key 未満の value の和を返す
+	Monoid erase(Key key, Monoid value)
+	{
+		if (root) {
+			return root->insert(key, IDENT, replace = true);
+		} else {
+			return IDENT;
+		}
+	}
+};
+$end$]]></Code>
+    </Snippet>
+  </CodeSnippet>
+</CodeSnippets>
