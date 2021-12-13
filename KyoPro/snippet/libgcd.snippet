@@ -15,11 +15,18 @@
       <Shortcut>libgcd</Shortcut>
     </Header>
     <Snippet>
-      <Code Language="cpp" Delimiter="$"><![CDATA[namespace gcd {
-	// from
-	// https://qiita.com/drken/items/3beb679e54266f20ab63
-	// by drken
-
+      <Code Language="cpp" Delimiter="$"><![CDATA[// Fast GCD Transformation / Convolution
+// (添え字 GCD 畳み込み in Japanese)
+//
+// Fast GCD Transformation can solve the following problem:
+//     input: vector A, B
+//     output: vector C, where
+//                 C[n] = sum_{gcd(i, j)=n} A[i]B[j]
+//
+// This code from
+// https://qiita.com/drken/items/3beb679e54266f20ab63
+// by drken
+namespace gcd {
 	using namespace std;
 
 	// エラトステネスの篩
