@@ -1,17 +1,4 @@
-#include <algorithm>
-#include <cassert>
-#include <climits>
-#include <cmath>
-#include <deque>
-#include <functional>
-#include <iomanip>
-#include <iostream>
-#include <numeric>
-#include <iterator>
-#include <set>
-#include <unordered_map>
-#include <utility>
-#include <vector>
+#include <bits/stdc++.h>
 using namespace std;
 struct fastio {
 	fastio()
