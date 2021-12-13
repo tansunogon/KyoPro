@@ -15,7 +15,16 @@
       <Shortcut>libslidemin</Shortcut>
     </Header>
     <Snippet>
-      <Code Language="cpp" Delimiter="$"><![CDATA[namespace slidemin {
+      <Code Language="cpp" Delimiter="$"><![CDATA[// Slide Min
+//
+// Implemented by tansu
+//
+// Slide Min can solve problems like:
+//     input: vector v, integer k
+//     output: vector u,
+//             where for all i in [0, |v|),
+//                 u[i] = min {v[i], v[i+1], ......, v[i+k-1]}
+namespace slidemin {
 	template<typename T, class Compare = less<T>>
 	struct SlideMin {
 		size_t k;
