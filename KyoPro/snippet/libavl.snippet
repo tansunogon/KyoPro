@@ -15,26 +15,56 @@
       <Shortcut>libavl</Shortcut>
     </Header>
     <Snippet>
-      <Code Language="cpp" Delimiter="$"><![CDATA[template <class Key, class Monoid, Monoid IDENT, class Op>
+      <Code Language="cpp" Delimiter="$"><![CDATA[// AVL Tree
+//
+// AVL Tree can solve the following problems:
+//     Process queries of the followings.
+//         1. Replace (or make) value V at K
+//            input: K, V
+//            effect: A[K] = V
+//         2. Apply binary operation at K with value V
+//            input: K, V
+//            effect: A[K] = A[K] Op V
+//            For example, if Op = add, then apply
+//                A[K] += V
+//         3. Calculate range value
+//            input: [l, r)
+//            output: Op_{l<=k<r} A[k]
+//            For example, if Op = add, then calculate
+//                sum_{l<=k<r} A[k]
+//         4. Search minimum range
+//            input: K, function f: value -> {true, false}
+//            output: min_{f(Op_{K<=k<r} A[k])} r
+//            For example, if Op = add and f(v)=(10<=v), then search
+//                min_{10 <= sum_{K<=k<r}A[k]} r
+//
+// AVL Tree can solve the same problems as Segment Tree does.
+// Segment Tree sometimes needs coordinate compression,
+// but AVL tree has the advantage that there is no need to compress coordinates.
+//
+// Implemented by tansu
+template <class Key, class Monoid, Monoid IDENT, class Op>
 struct AVLTreeNode {
 	AVLTreeNode *left;
 	AVLTreeNode *right;
 	Key key;
-	Monoid m;
-	Monoid sum_of_m;
+	Monoid value;
+	Monoid sum_of_value;
 	int rank;
 	AVLTreeNode(Key key, Monoid value) :
 		left(nullptr),
 		right(nullptr),
 		key(key),
-		m(value),
-		sum_of_m(value),
-		rank(1) {}
+		value(value),
+		sum_of_value(value),
+		rank(1)
+	{
+	}
 	~AVLTreeNode() { delete left; delete right; }
 	// 全ての要素の和を返す
 	Monoid sum() const
 	{
-		return sum_of_m;
+		return sum_of_value;
 	}
 	// key 未満の value の和を返す
 	Monoid lower_sum(Key key) const
@@ -46,39 +76,36 @@ struct AVLTreeNode {
 			l_sum = this->left ? this->left->lower_sum(key) : IDENT;
 		} else {
 			l_sum = this->left ? this->left->sum() : IDENT;
-			l_sum = Op()(l_sum, this->m);
+			l_sum = Op()(l_sum, this->value);
 			l_sum = Op()(l_sum, this->right ? this->right->lower_sum(key) : IDENT);
 		}
 		return l_sum;
 	}
 	// key に value を加算する
-	// key 未満の value の和を返す
-	Monoid insert(Key key, Monoid value, bool replace = false)
+	// 該当するノードのポインタを返す
+	AVLTreeNode *insert(Key key, Monoid value, bool replace = false)
 	{
-		Monoid l_sum;
+		AVLTreeNode *ret;
 		if (!(key < this->key) && !(this->key < key)) {
 			if (replace) {
-				this->m = value;
+				this->value = value;
 				update_sum();
 			} else {
-				this->m = Op()(this->m, value);
-				this->sum_of_m = Op()(this->sum_of_m, value);
+				this->value = Op()(this->value, value);
+				this->sum_of_value = Op()(this->sum_of_value, value);
 			}
-			return this->left ? this->left->sum() : IDENT;
+			return this;
 		} else if (key < this->key) {
 			if (this->left) {
-				l_sum = this->left->insert(key, value);
+				ret = this->left->insert(key, value);
 			} else {
-				this->left = new AVLTreeNode(key, value);
-				l_sum = IDENT;
+				ret = this->left = new AVLTreeNode(key, value);
 			}
 		} else {
-			l_sum = this->left ? this->left->sum() : IDENT;
-			l_sum = Op()(l_sum, this->m);
 			if (this->right) {
-				l_sum = Op()(l_sum, this->right->insert(key, value));
+				ret = this->right->insert(key, value);
 			} else {
-				this->right = new AVLTreeNode(key, value);
+				ret = this->right = new AVLTreeNode(key, value);
 			}
 		}
 		update_sum();
@@ -92,13 +119,13 @@ struct AVLTreeNode {
 			rotate_r();
 		}
 
-		return l_sum;
+		return ret;
 	}
 	void update_sum()
 	{
 		Monoid l_sum = left ? left->sum() : IDENT;
 		Monoid r_sum = right ? right->sum() : IDENT;
-		sum_of_m = Op()(Op()(m, l_sum), r_sum);
+		sum_of_value = Op()(Op()(value, l_sum), r_sum);
 	}
 	void update_rank()
 	{
@@ -120,7 +147,7 @@ struct AVLTreeNode {
 		node->left = lr;
 		node->right = r;
 		swap(root->key, node->key);
-		swap(root->m, node->m);
+		swap(root->value, node->value);
 		node->update_sum();
 		node->update_rank();
 		root->update_sum();
@@ -140,20 +167,68 @@ struct AVLTreeNode {
 		node->left = l;
 		node->right = rl;
 		swap(root->key, node->key);
-		swap(root->m, node->m);
+		swap(root->value, node->value);
 		node->update_sum();
 		node->update_rank();
 		root->update_sum();
 		root->update_rank();
 	}
 };
+template <class Key, class Monoid, Monoid IDENT, class Op>
+struct AVLTreeIterator {
+	vector<AVLTreeNode<Key, Monoid, IDENT, Op> *> stack;
+	AVLTreeIterator(AVLTreeNode<Key, Monoid, IDENT, Op> *node)
+	{
+		while (node) {
+			stack.push_back(node);
+			node = node->left;
+		}
+	}
+	AVLTreeIterator &operator++()
+	{
+		auto node = stack.back();
+		if (node->right) {
+			node = node->right;
+			while (node) {
+				stack.push_back(node);
+				node = node->left;
+			}
+			return *this;
+		}
+		stack.pop_back();
+		while (!stack.empty() && stack.back() != nullptr && stack.back()->right == node) {
+			node = stack.back();
+			stack.pop_back();
+		}
+		return *this;
+	}
+	bool operator==(const AVLTreeIterator &rhs) const
+	{
+		return (stack.empty() && rhs.stack.empty())
+			|| (stack.size() == rhs.stack.size() && stack.back() == rhs.stack.back());
+	}
+	bool operator!=(const AVLTreeIterator &rhs) const
+	{
+		return !operator==(rhs);
+	}
+	AVLTreeNode<Key, Monoid, IDENT, Op> *operator*() const
+	{
+		return stack.back();
+	}
+	AVLTreeNode<Key, Monoid, IDENT, Op> *operator->() const
+	{
+		return stack.back();
+	}
+};
 template <class Key = int, class Monoid = int, Monoid IDENT = Monoid(), class Op = plus<Monoid>>
 struct AVLTree {
-	AVLTreeNode<Key, Monoid, IDENT, Op> *root;
+	using Node = AVLTreeNode<Key, Monoid, IDENT, Op>;
+	using iterator = AVLTreeIterator<Key, Monoid, IDENT, Op>;
+	Node *root;
 	AVLTree() : root(nullptr) {}
 	~AVLTree() { delete root; }
 	// 全ての要素の和を返す
-	Monoid sum()
+	Monoid sum() const
 	{
 		if (root) {
 			return root->sum();
@@ -171,25 +246,33 @@ struct AVLTree {
 		}
 	}
 	// key に value を加算する
-	// key 未満の value の和を返す
-	Monoid insert(Key key, Monoid value, bool replace = false)
+	// 該当するノードのポインタを返す
+	Node *insert(Key key, Monoid value, bool replace = false)
 	{
 		if (root) {
 			return root->insert(key, value, replace);
 		} else {
-			root = new AVLTreeNode<Key, Monoid, IDENT, Op>(key, value);
-			return IDENT;
+			root = new Node(key, value);
+			return root;
 		}
 	}
 	// key の要素を削除する (実際には IDENT で置き換える)
-	// key 未満の value の和を返す
-	Monoid erase(Key key, Monoid value)
+	// 該当するノードのポインタを返す
+	Node *erase(Key key, Monoid value) const
 	{
 		if (root) {
 			return root->insert(key, IDENT, replace = true);
 		} else {
-			return IDENT;
+			return nullptr;
 		}
+	}
+	iterator begin() const
+	{
+		return iterator(root);
+	}
+	iterator end() const
+	{
+		return iterator(nullptr);
 	}
 };
 $end$]]></Code>
