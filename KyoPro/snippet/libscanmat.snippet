@@ -15,7 +15,15 @@
       <Shortcut>libscanmat</Shortcut>
     </Header>
     <Snippet>
-      <Code Language="cpp" Delimiter="$"><![CDATA[namespace scanmat {
+      <Code Language="cpp" Delimiter="$"><![CDATA[// Scanner for 2D vectors
+//
+// This library can solve the following problems:
+//     1. Cumulative sum
+//     2. Slide sum
+//     3. Slide min
+//
+// Implemented by tansu
+namespace scanmat {
 	// ret[i][j] = sum_{k<=i, l<=j} mat[k][l]
 	template<typename T>
 	vector<vector<T>> cumulative_sum(const vector<vector<T>> &mat)
@@ -45,7 +53,7 @@
 	{
 		assert(h > 0 && w > 0);
 		auto s = cumulative_sum(mat);
-		vector wsum = s;
+		vector ssum = s;
 		size_t i_max = s.size() - 1;
 		size_t j_max = s[0].size() - 1;
 		for (size_t i = 0; i < s.size(); i++) {
@@ -58,10 +66,10 @@
 				T v1 = i == 0 ? 0 : s[pi][qj];
 				T v2 = j == 0 ? 0 : s[qi][pj];
 				T v3 = (i == 0 || j == 0) ? 0 : s[pi][pj];
-				wsum[i][j] = v0 - v1 - v2 + v3;
+				ssum[i][j] = v0 - v1 - v2 + v3;
 			}
 		}
-		return wsum;
+		return ssum;
 	}
 
 	template<typename T, class Compare = less<T>>
