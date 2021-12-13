@@ -15,7 +15,11 @@
       <Shortcut>libuf</Shortcut>
     </Header>
     <Snippet>
-      <Code Language="cpp" Delimiter="$"><![CDATA[// {0, 1, ......, sz-1} を素集合に分割して保持するデータ構造
+      <Code Language="cpp" Delimiter="$"><![CDATA[// Union Find
+//
+// Union Find は {0, 1, ......, sz-1} を素集合に分割して保持することができる
+//
+// Implemented by tansu
 struct UnionFind {
 	// 非負の場合は、親のインデックスを表す
 	// 負の場合は、親がいないことを表す。値の絶対値は集合の要素数を表す
