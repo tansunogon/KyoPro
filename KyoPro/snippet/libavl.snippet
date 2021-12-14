@@ -18,8 +18,14 @@
       <Code Language="cpp" Delimiter="$"><![CDATA[// AVL Tree
 //
 // AVL Tree can solve the following problems:
+//     Initially assume that for each element in an infinite sequence is
+//     the identity value IDENT:
+//             For all k, A[k] = IDENT (k: index or key)
+//         For Example, if you are considering numbers and add operation,
+//         the identity element is 0. So,
+//             For all k, A[k] = 0     (k: index or key)
 //     Process queries of the followings.
-//         1. Replace (or make) value V at K
+//         1. Replace value V at K
 //            input: K, V
 //            effect: A[K] = V
 //         2. Apply binary operation at K with value V
@@ -28,15 +34,18 @@
 //            For example, if Op = add, then apply
 //                A[K] += V
 //         3. Calculate range value
-//            input: [l, r)
-//            output: Op_{l<=k<r} A[k]
+//            input: L, R
+//            output: Op_{L<=k<=R} A[k]
 //            For example, if Op = add, then calculate
-//                sum_{l<=k<r} A[k]
+//                sum_{L<=k<=R} A[k]
 //         4. Search minimum range
-//            input: K, function f: value -> {true, false}
-//            output: min_{f(Op_{K<=k<r} A[k])} r
-//            For example, if Op = add and f(v)=(10<=v), then search
-//                min_{10 <= sum_{K<=k<r}A[k]} r
+//            input: L, function F: value -> {true, false}
+//                   Function F should have the following property:
+//                       For all p, q. L < p < q.
+//                           F(Op_{L<=k<=q} A[k]) => F(Op_{L<=k<=p} A[k])
+//            output: minimum r, where F(Op_{L<=k<=r} A[k])
+//            For example, if Op = add and F(v)=(10<=v), then search
+//                minimum r, where 10 <= sum_{L<=k<=r} A[k]
 //
 // AVL Tree can solve the same problems as Segment Tree does.
 // Segment Tree sometimes needs coordinate compression,
@@ -66,20 +75,74 @@ struct AVLTreeNode {
 	{
 		return sum_of_value;
 	}
-	// key 未満の value の和を返す
+	// key 以下の value の和を返す
 	Monoid lower_sum(Key key) const
 	{
-		Monoid l_sum;
-		if (!(key < this->key) && !(this->key < key)) {
-			l_sum = this->left ? this->left->sum() : IDENT;
-		} else if (key < this->key) {
-			l_sum = this->left ? this->left->lower_sum(key) : IDENT;
-		} else {
-			l_sum = this->left ? this->left->sum() : IDENT;
-			l_sum = Op()(l_sum, this->value);
-			l_sum = Op()(l_sum, this->right ? this->right->lower_sum(key) : IDENT);
+		Monoid s = IDENT;
+		AVLTreeNode *node = this;
+		while (node) {
+			if (!(key < node->key) && !(node->key < key)) {
+				s = Op()(s, node->left ? node->left->sum() : IDENT);
+				s = Op()(s, node->value);
+				break;
+			} else if (key < node->key) {
+				node = node->left;
+			} else {
+				s = Op()(s, node->left ? node->left->sum() : IDENT);
+				s = Op()(s, node->value);
+				node = node->right;
+			}
 		}
-		return l_sum;
+		return s;
+	}
+	// key 以上の value の和を返す
+	Monoid upper_sum(Key key) const
+	{
+		Monoid s = IDENT;
+		AVLTreeNode *node = this;
+		while (node) {
+			if (!(key < node->key) && !(node->key < key)) {
+				s = Op()(s, node->value);
+				s = Op()(s, node->right ? node->right->sum() : IDENT);
+				break;
+			} else if (key < node->key) {
+				s = Op()(s, node->value);
+				s = Op()(s, node->right ? node->right->sum() : IDENT);
+				node = node->left;
+			} else {
+				node = node->right;
+			}
+		}
+		return s;
+	}
+	Monoid range_sum(Key l_key, Key r_key) const
+	{
+		AVLTreeNode *node = this;
+		while (node) {
+			if (node->key < l_key) {
+				node = node->left;
+			} else if (!(l_key < node->key)) { // node->key == l_key
+				return node->upper_sum(r_key);
+			} else if (node->key < r_key) { // l_key < node->key < r_key
+				Monoid s = node->value;
+				s = Op()(s, node->left ? node->left->upper_sum() : IDENT);
+				s = Op()(s, node->right ? node->right->lower_sum() : IDENT);
+				return s;
+			} else if (!(r_key < node->key)) { // node->key == r_key
+				return node->lower_sum(l_key);
+			} else { // r_key < node->key
+				node = node->right;
+			}
+		}
+		return IDENT;
+	}
+	Key min_range(Key l_key, function<bool(Monoid)> f) const
+	{
+
+	}
+	Key min_range_r(Key r_key, function<bool(Monoid)> f) const
+	{
+
 	}
 	// key に value を加算する
 	// 該当するノードのポインタを返す
@@ -176,8 +239,9 @@ struct AVLTreeNode {
 };
 template <class Key, class Monoid, Monoid IDENT, class Op>
 struct AVLTreeIterator {
-	vector<AVLTreeNode<Key, Monoid, IDENT, Op> *> stack;
-	AVLTreeIterator(AVLTreeNode<Key, Monoid, IDENT, Op> *node)
+	using Node = AVLTreeNode<Key, Monoid, IDENT, Op>;
+	vector<Node *> stack;
+	AVLTreeIterator(Node *node)
 	{
 		while (node) {
 			stack.push_back(node);
@@ -211,13 +275,13 @@ struct AVLTreeIterator {
 	{
 		return !operator==(rhs);
 	}
-	AVLTreeNode<Key, Monoid, IDENT, Op> *operator*() const
+	Node *operator->() const
 	{
 		return stack.back();
 	}
-	AVLTreeNode<Key, Monoid, IDENT, Op> *operator->() const
+	pair<Key, Monoid> operator*() const
 	{
-		return stack.back();
+		return make_pair(stack.back()->key, stack.back()->value);
 	}
 };
 template <class Key = int, class Monoid = int, Monoid IDENT = Monoid(), class Op = plus<Monoid>>
