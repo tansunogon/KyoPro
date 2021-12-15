@@ -247,7 +247,7 @@
     <None Include="snippet\libavl.snippet">
       <Filter>snippet\lib</Filter>
     </None>
-    <None Include="snippet\dmaxo.snippet">
+    <None Include="snippet\dmax.snippet">
       <Filter>snippet\dec</Filter>
     </None>
   </ItemGroup>

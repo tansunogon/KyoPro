@@ -159,7 +159,7 @@
     <None Include="snippet\cmat.snippet" />
     <None Include="snippet\cmats.snippet" />
     <None Include="snippet\ddxdy.snippet" />
-    <None Include="snippet\dmaxo.snippet" />
+    <None Include="snippet\dmax.snippet" />
     <None Include="snippet\dvec.snippet" />
     <None Include="snippet\dvec2.snippet" />
     <None Include="snippet\dvec3.snippet" />
