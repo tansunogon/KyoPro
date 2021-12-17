@@ -253,9 +253,6 @@
     <None Include="snippet\dmax.snippet">
       <Filter>snippet\dec</Filter>
     </None>
-    <None Include="snippet\dxor.snippet">
-      <Filter>snippet\dec</Filter>
-    </None>
     <None Include="snippet\davll.snippet">
       <Filter>snippet\dec</Filter>
     </None>
