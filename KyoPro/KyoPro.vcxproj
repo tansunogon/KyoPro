@@ -173,6 +173,7 @@
     <None Include="snippet\dvect2.snippet" />
     <None Include="snippet\dvect3.snippet" />
     <None Include="snippet\dvect4.snippet" />
+    <None Include="snippet\dxor.snippet" />
     <None Include="snippet\funffsum.snippet" />
     <None Include="snippet\funfsum.snippet" />
     <None Include="snippet\lamsecond.snippet" />
