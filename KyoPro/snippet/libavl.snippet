@@ -18,7 +18,7 @@
       <Code Language="cpp" Delimiter="$"><![CDATA[// AVL Tree
 //
 // AVL Tree can solve the following problems:
-//     Initially assume that for each element in an infinite sequence is
+//     Assume that for each element in an infinite sequence is
 //     the identity value IDENT:
 //             For all k, A[k] = IDENT (k: index or key)
 //         For Example, if you are considering numbers and add operation,
@@ -47,8 +47,7 @@
 //            For example, if Op = add and F(v)=(10<=v), then search
 //                minimum r, where 10 <= sum_{L<=k<=r} A[k]
 //
-// AVL Tree can solve the same problems as Segment Tree does.
-// Segment Tree sometimes needs coordinate compression,
+// Segment Tree can solve the same problems,
 // but AVL tree has the advantage that there is no need to compress coordinates.
 //
 // Implemented by tansu
@@ -70,105 +69,194 @@ struct AVLTreeNode {
 	{
 	}
 	~AVLTreeNode() { delete left; delete right; }
-	// 全ての要素の和を返す
-	Monoid sum() const
-	{
-		return sum_of_value;
-	}
-	// key 以下の value の和を返す
+	template <bool REVERSE = false>
+	AVLTreeNode *get_left() const { return !REVERSE ? left : right; }
+	template <bool REVERSE = false>
+	AVLTreeNode *get_right() const { return !REVERSE ? right : left; }
+	template <bool REVERSE = false>
+	bool less_than(Key key) const { return !REVERSE ? (this->key < key) : (this->key > key); }
+	template <bool REVERSE = false>
+	bool greater_than(Key key) const { return !REVERSE ? (this->key > key) : (this->key < key); }
+	// returns: Op_{k} A[k]
+	Monoid sum() const { return sum_of_value; }
+	// returns: Op_{k<=key} A[k]
+	template <bool REVERSE = false>
 	Monoid lower_sum(Key key) const
 	{
 		Monoid s = IDENT;
-		AVLTreeNode *node = this;
+		const AVLTreeNode *node = this;
 		while (node) {
 			if (!(key < node->key) && !(node->key < key)) {
-				s = Op()(s, node->left ? node->left->sum() : IDENT);
+				s = Op()(s, node->get_left<REVERSE>() ? node->get_left<REVERSE>()->sum() : IDENT);
 				s = Op()(s, node->value);
 				break;
-			} else if (key < node->key) {
-				node = node->left;
+			} else if (node->greater_than<REVERSE>(key)) {
+				node = node->get_left<REVERSE>();
 			} else {
-				s = Op()(s, node->left ? node->left->sum() : IDENT);
+				s = Op()(s, node->get_left<REVERSE>() ? node->get_left<REVERSE>()->sum() : IDENT);
 				s = Op()(s, node->value);
-				node = node->right;
+				node = node->get_right<REVERSE>();
 			}
 		}
 		return s;
 	}
-	// key 以上の value の和を返す
+	// returns: Op_{key<=k} A[k]
 	Monoid upper_sum(Key key) const
 	{
-		Monoid s = IDENT;
-		AVLTreeNode *node = this;
-		while (node) {
-			if (!(key < node->key) && !(node->key < key)) {
-				s = Op()(s, node->value);
-				s = Op()(s, node->right ? node->right->sum() : IDENT);
-				break;
-			} else if (key < node->key) {
-				s = Op()(s, node->value);
-				s = Op()(s, node->right ? node->right->sum() : IDENT);
-				node = node->left;
-			} else {
-				node = node->right;
-			}
-		}
-		return s;
+		return lower_sum<true>(key);
 	}
+	// returns: Op_{l_key<=key<=r_key} A[k]
 	Monoid range_sum(Key l_key, Key r_key) const
 	{
-		AVLTreeNode *node = this;
+		const AVLTreeNode *node = this;
 		while (node) {
 			if (node->key < l_key) {
-				node = node->left;
+				node = node->right;
 			} else if (!(l_key < node->key)) { // node->key == l_key
-				return node->upper_sum(r_key);
+				Monoid s = node->value;
+				return Op()(s, node->right ? node->right->lower_sum(r_key) : IDENT);
 			} else if (node->key < r_key) { // l_key < node->key < r_key
 				Monoid s = node->value;
-				s = Op()(s, node->left ? node->left->upper_sum() : IDENT);
-				s = Op()(s, node->right ? node->right->lower_sum() : IDENT);
+				s = Op()(s, node->left ? node->left->upper_sum(l_key) : IDENT);
+				s = Op()(s, node->right ? node->right->lower_sum(r_key) : IDENT);
 				return s;
 			} else if (!(r_key < node->key)) { // node->key == r_key
-				return node->lower_sum(l_key);
+				Monoid s = node->value;
+				return Op()(s, node->left ? node->left->upper_sum(l_key) : IDENT);
 			} else { // r_key < node->key
-				node = node->right;
+				node = node->left;
 			}
 		}
 		return IDENT;
 	}
-	Key min_range(Key l_key, function<bool(Monoid)> f) const
+	// search the node whose key is key
+	// returns: node pointer
+	// if REVERSE = false and there is no node whose key is key, then returns the nearest greater node.
+	// if REVERSE = true  and there is no node whose key is key, then returns the nearest lesser node.
+	// push_back parent nodes to trace
+	template <bool REVERSE = false>
+	const AVLTreeNode *search(Key key, vector<const AVLTreeNode *> *trace = nullptr) const
 	{
-
+		const AVLTreeNode *node = this;
+		while (node) {
+			if (!(key < node->key) && !(node->key < key)) {
+				return node;
+			} else if (key < node->key) {
+				if (!node->left && !REVERSE) {
+					return node;
+				}
+				if (trace) {
+					trace->push_back(node);
+				}
+				node = node->left;
+			} else {
+				if (!node->right && REVERSE) {
+					return node;
+				}
+				if (trace) {
+					trace->push_back(node);
+				}
+				node = node->right;
+			}
+		}
+		return nullptr;
 	}
-	Key min_range_r(Key r_key, function<bool(Monoid)> f) const
+	template <bool REVERSE = false>
+	const AVLTreeNode *upper_parent(vector<const AVLTreeNode *> *trace) const
 	{
-
+		while (!trace->empty() && !(this->less_than<REVERSE>(trace->back()->key))) {
+			trace->pop_back();
+		}
+		if (trace->empty()) {
+			return nullptr;
+		}
+		return trace->back();
 	}
-	// key に value を加算する
-	// 該当するノードのポインタを返す
-	AVLTreeNode *insert(Key key, Monoid value, bool replace = false)
+	template <bool REVERSE = false>
+	const AVLTreeNode *rightmost(vector<const AVLTreeNode *> *trace = nullptr) const
+	{
+		const AVLTreeNode *node = this;
+		while (node->get_right<REVERSE>()) {
+			if (trace) {
+				trace->push_back(node);
+			}
+			node = node->get_right<REVERSE>();
+		}
+		return node;
+	}
+	template <bool REVERSE = false>
+	const AVLTreeNode *leftmost(vector<const AVLTreeNode *> *trace = nullptr) const
+	{
+		return rightmost<!REVERSE>(trace);
+	}
+	template <bool REVERSE = false>
+	const Key *min_range(Key l_key, function<bool(Monoid)> f) const
+	{
+		vector<const AVLTreeNode *> trace;
+		trace.reserve((size_t)this->rank + 5);
+		const AVLTreeNode *node = search<REVERSE>(l_key, &trace);
+		if (!node || !f(node->value)) {
+			return nullptr;
+		}
+		Monoid s = node->value;
+		while (true) {
+			// now, f(Op_{l_key<=k<=node->key} A[k]) = true
+			if (!node->get_right<REVERSE>()) {
+				const AVLTreeNode *parent = node->upper_parent<REVERSE>(&trace);
+				if (!parent || !f(Op()(s, parent->value))) {
+					return &node->key;
+				} else {
+					s = Op()(s, parent->value);
+					node = parent;
+				}
+			} else {
+				if (f(Op()(s, node->get_right<REVERSE>()->sum()))) {
+					s = f(Op()(s, node->get_right<REVERSE>()->sum()));
+					const AVLTreeNode *parent = node->upper_parent<REVERSE>(&trace);
+					if (!parent || !f(Op()(s, parent->value))) {
+						return &node->rightmost<REVERSE>()->key;
+					} else {
+						s = Op()(s, parent->value);
+						node = parent;
+					}
+				} else {
+					const AVLTreeNode *next = node->get_right<REVERSE>()->template leftmost<REVERSE>(&trace);
+					if (!f(Op()(s, next->value))) {
+						return &node->key;
+					} else {
+						s = Op()(s, next->value);
+						node = next;
+					}
+				}
+			}
+		}
+	}
+	const Key *min_range_r(Key r_key, function<bool(Monoid)> f) const
+	{
+		return min_range<true>(r_key, f);
+	}
+	// update or insert
+	// effect: A[key] = UpdateOp()(A[key], ...)
+	// returns: node pointer
+	template <class UpdateOp, class ...Args>
+	AVLTreeNode *update(Key key, Args ...args)
 	{
 		AVLTreeNode *ret;
 		if (!(key < this->key) && !(this->key < key)) {
-			if (replace) {
-				this->value = value;
-				update_sum();
-			} else {
-				this->value = Op()(this->value, value);
-				this->sum_of_value = Op()(this->sum_of_value, value);
-			}
+			this->value = UpdateOp()(this->value, args...);
+			update_sum();
 			return this;
 		} else if (key < this->key) {
 			if (this->left) {
-				ret = this->left->insert(key, value);
+				ret = this->left->template update<UpdateOp>(key, args...);
 			} else {
-				ret = this->left = new AVLTreeNode(key, value);
+				ret = this->left = new AVLTreeNode(key, UpdateOp()(IDENT, args...));
 			}
 		} else {
 			if (this->right) {
-				ret = this->right->insert(key, value);
+				ret = this->right->template update<UpdateOp>(key, args...);
 			} else {
-				ret = this->right = new AVLTreeNode(key, value);
+				ret = this->right = new AVLTreeNode(key, UpdateOp()(IDENT, args...));
 			}
 		}
 		update_sum();
@@ -291,41 +379,68 @@ struct AVLTree {
 	Node *root;
 	AVLTree() : root(nullptr) {}
 	~AVLTree() { delete root; }
-	// 全ての要素の和を返す
+	// returns: Op_{key<=k} A[k]
 	Monoid sum() const
 	{
-		if (root) {
-			return root->sum();
-		} else {
-			return IDENT;
-		}
+		return root ? root->sum() : IDENT;
 	}
-	// key 未満の value の和を返す
+	// returns: Op_{k<=key} A[k]
 	Monoid lower_sum(Key key) const
 	{
-		if (root) {
-			return root->lower_sum(key);
-		} else {
-			return IDENT;
-		}
+		return root ? root->lower_sum(key) : IDENT;
 	}
-	// key に value を加算する
-	// 該当するノードのポインタを返す
-	Node *insert(Key key, Monoid value, bool replace = false)
+	// returns: Op_{key<=k} A[k]
+	Monoid upper_sum(Key key) const
+	{
+		return root ? root->upper_sum(key) : IDENT;
+	}
+	// returns: Op_{l_key<=key<=r_key} A[k]
+	Monoid range_sum(Key l_key, Key r_key) const
+	{
+		return root ? root->range_sum(l_key, r_key) : IDENT;
+	}
+	const Key *min_range(Key l_key, function<bool(Monoid)> f) const
+	{
+		return root ? root->min_range(l_key, f) : nullptr;
+	}
+	const Key *min_range_r(Key r_key, function<bool(Monoid)> f) const
+	{
+		return root ? root->min_range_r(r_key, f) : nullptr;
+	}
+	template <class UpdateOp, class ...Args>
+	Node *update(Key key, Args ...args)
 	{
 		if (root) {
-			return root->insert(key, value, replace);
+			return root->template update<UpdateOp>(key, args...);
 		} else {
-			root = new Node(key, value);
+			root = new Node(key, UpdateOp()(IDENT, args...));
 			return root;
 		}
 	}
-	// key の要素を削除する (実際には IDENT で置き換える)
-	// 該当するノードのポインタを返す
+	// effect: A[key] = value
+	// returns: node pointer
+	Node *replace(Key key, Monoid value)
+	{
+		struct ReplaceOp {
+			Monoid operator()([[maybe_unused]] Monoid v_old, Monoid v_new)
+			{
+				return v_new;
+			}
+		};
+		return update<ReplaceOp, Monoid>(key, value);
+	}
+	// effect: A[key] = Op(A[key], value)
+	// returns: node pointer
+	Node *apply_op(Key key, Monoid value)
+	{
+		return update<Op, Monoid>(key, value);
+	}
+	// effect: A[key] = IDENT
+	// returns: node pointer
 	Node *erase(Key key, Monoid value) const
 	{
 		if (root) {
-			return root->insert(key, IDENT, replace = true);
+			return root->replace(key, IDENT);
 		} else {
 			return nullptr;
 		}
