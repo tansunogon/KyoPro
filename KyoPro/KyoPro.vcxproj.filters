@@ -256,6 +256,9 @@
     <None Include="snippet\davll.snippet">
       <Filter>snippet\dec</Filter>
     </None>
+    <None Include="snippet\davl.snippet">
+      <Filter>snippet\dec</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\includes\bits\stdc++.h">
