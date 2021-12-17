@@ -149,6 +149,7 @@
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <Text Include="ans.txt" />
     <Text Include="input.txt" />
     <Text Include="output.txt" />
   </ItemGroup>

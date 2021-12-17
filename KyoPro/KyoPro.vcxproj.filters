@@ -47,6 +47,9 @@
     <Text Include="input.txt">
       <Filter>ソース ファイル</Filter>
     </Text>
+    <Text Include="ans.txt">
+      <Filter>ソース ファイル</Filter>
+    </Text>
   </ItemGroup>
   <ItemGroup>
     <None Include="snippet\liberatos.snippet">
