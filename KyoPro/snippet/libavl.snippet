@@ -53,7 +53,7 @@
 // Implemented by tansu
 struct EmptyExtraNodeInfo {
 	template <class Key, class AlterInfo>
-	EmptyExtraNodeInfo(Key l_key, Key r_key, AlterInfo alter_info) {}
+	EmptyExtraNodeInfo([[maybe_unused]] Key l_key, [[maybe_unused]] Key r_key, [[maybe_unused]] AlterInfo alter_info) {}
 };
 template <class Key, class AlterInfo>
 struct ExtraNodeInfoForLazy {
@@ -229,7 +229,7 @@ struct AVLTreeNode {
 		while (true) {
 			// now, f(Op_{l_key<=k<=node->key} A[k]) = true
 			if (!node->get_right<REVERSE>()) {
-				const AVLTreeNode *parent = node->upper_parent<REVERSE>(&trace);
+				AVLTreeNode *parent = node->upper_parent<REVERSE>(&trace);
 				if (!parent || !f(Op()(s, parent->value))) {
 					return &node->key;
 				} else {
@@ -238,8 +238,8 @@ struct AVLTreeNode {
 				}
 			} else {
 				if (f(Op()(s, node->get_right<REVERSE>()->sum()))) {
-					s = f(Op()(s, node->get_right<REVERSE>()->sum()));
-					const AVLTreeNode *parent = node->upper_parent<REVERSE>(&trace);
+					s = Op()(s, node->get_right<REVERSE>()->sum());
+					AVLTreeNode *parent = node->upper_parent<REVERSE>(&trace);
 					if (!parent || !f(Op()(s, parent->value))) {
 						return &node->rightmost<REVERSE>()->key;
 					} else {
@@ -247,7 +247,7 @@ struct AVLTreeNode {
 						node = parent;
 					}
 				} else {
-					const AVLTreeNode *next = node->get_right<REVERSE>()->template leftmost<REVERSE>(&trace);
+					AVLTreeNode *next = node->get_right<REVERSE>()->template leftmost<REVERSE>(&trace);
 					if (!f(Op()(s, next->value))) {
 						return &node->key;
 					} else {
