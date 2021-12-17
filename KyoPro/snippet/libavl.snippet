@@ -51,7 +51,23 @@
 // but AVL tree has the advantage that there is no need to compress coordinates.
 //
 // Implemented by tansu
-template <class Key, class Monoid, Monoid IDENT, class Op>
+struct EmptyExtraNodeInfo {
+	template <class Key, class AlterInfo>
+	EmptyExtraNodeInfo(Key l_key, Key r_key, AlterInfo alter_info) {}
+};
+template <class Key, class AlterInfo>
+struct ExtraNodeInfoForLazy {
+	Key leftmost_key;
+	Key rightmost_key;
+	AlterInfo alter_info;
+	ExtraNodeInfoForLazy(Key l_key, Key r_key, AlterInfo alter_info) :
+		leftmost_key(l_key),
+		rightmost_key(r_key),
+		alter_info(alter_info)
+	{
+	}
+};
+template <class Key, class Monoid, Monoid IDENT, class Op, bool LAZY, class AlterInfo, AlterInfo AIDENT, class MAOp, class AAOp>
 struct AVLTreeNode {
 	AVLTreeNode *left;
 	AVLTreeNode *right;
@@ -59,13 +75,16 @@ struct AVLTreeNode {
 	Monoid value;
 	Monoid sum_of_value;
 	int rank;
+	using LazyInfo = typename conditional<LAZY, ExtraNodeInfoForLazy<Key, AlterInfo>, EmptyExtraNodeInfo>::type;
+	LazyInfo lazy_info;
 	AVLTreeNode(Key key, Monoid value) :
 		left(nullptr),
 		right(nullptr),
 		key(key),
 		value(value),
 		sum_of_value(value),
-		rank(1)
+		rank(1),
+		lazy_info(key, key, AIDENT)
 	{
 	}
 	~AVLTreeNode() { delete left; delete right; }
@@ -78,14 +97,18 @@ struct AVLTreeNode {
 	template <bool REVERSE = false>
 	bool greater_than(Key key) const { return !REVERSE ? (this->key > key) : (this->key < key); }
 	// returns: Op_{k} A[k]
-	Monoid sum() const { return sum_of_value; }
+	Monoid sum() {
+		propagete_alter_info();
+		return sum_of_value;
+	}
 	// returns: Op_{k<=key} A[k]
 	template <bool REVERSE = false>
-	Monoid lower_sum(Key key) const
+	Monoid lower_sum(Key key)
 	{
 		Monoid s = IDENT;
-		const AVLTreeNode *node = this;
+		AVLTreeNode *node = this;
 		while (node) {
+			node->propagete_alter_info();
 			if (!(key < node->key) && !(node->key < key)) {
 				s = Op()(s, node->get_left<REVERSE>() ? node->get_left<REVERSE>()->sum() : IDENT);
 				s = Op()(s, node->value);
@@ -101,15 +124,16 @@ struct AVLTreeNode {
 		return s;
 	}
 	// returns: Op_{key<=k} A[k]
-	Monoid upper_sum(Key key) const
+	Monoid upper_sum(Key key)
 	{
 		return lower_sum<true>(key);
 	}
 	// returns: Op_{l_key<=key<=r_key} A[k]
-	Monoid range_sum(Key l_key, Key r_key) const
+	Monoid range_sum(Key l_key, Key r_key)
 	{
-		const AVLTreeNode *node = this;
+		AVLTreeNode *node = this;
 		while (node) {
+			node->propagete_alter_info();
 			if (node->key < l_key) {
 				node = node->right;
 			} else if (!(l_key < node->key)) { // node->key == l_key
@@ -135,10 +159,11 @@ struct AVLTreeNode {
 	// if REVERSE = true  and there is no node whose key is key, then returns the nearest lesser node.
 	// push_back parent nodes to trace
 	template <bool REVERSE = false>
-	const AVLTreeNode *search(Key key, vector<const AVLTreeNode *> *trace = nullptr) const
+	AVLTreeNode *search(Key key, vector<AVLTreeNode *> *trace = nullptr)
 	{
-		const AVLTreeNode *node = this;
+		AVLTreeNode *node = this;
 		while (node) {
+			node->propagete_alter_info();
 			if (!(key < node->key) && !(node->key < key)) {
 				return node;
 			} else if (key < node->key) {
@@ -162,7 +187,7 @@ struct AVLTreeNode {
 		return nullptr;
 	}
 	template <bool REVERSE = false>
-	const AVLTreeNode *upper_parent(vector<const AVLTreeNode *> *trace) const
+	AVLTreeNode *upper_parent(vector<AVLTreeNode *> *trace) const
 	{
 		while (!trace->empty() && !(this->less_than<REVERSE>(trace->back()->key))) {
 			trace->pop_back();
@@ -173,28 +198,29 @@ struct AVLTreeNode {
 		return trace->back();
 	}
 	template <bool REVERSE = false>
-	const AVLTreeNode *rightmost(vector<const AVLTreeNode *> *trace = nullptr) const
+	AVLTreeNode *rightmost(vector<AVLTreeNode *> *trace = nullptr)
 	{
-		const AVLTreeNode *node = this;
+		AVLTreeNode *node = this;
 		while (node->get_right<REVERSE>()) {
 			if (trace) {
 				trace->push_back(node);
 			}
 			node = node->get_right<REVERSE>();
+			node->propagete_alter_info();
 		}
 		return node;
 	}
 	template <bool REVERSE = false>
-	const AVLTreeNode *leftmost(vector<const AVLTreeNode *> *trace = nullptr) const
+	AVLTreeNode *leftmost(vector<AVLTreeNode *> *trace = nullptr)
 	{
 		return rightmost<!REVERSE>(trace);
 	}
 	template <bool REVERSE = false>
-	const Key *min_range(Key l_key, function<bool(Monoid)> f) const
+	const Key *min_range(Key l_key, function<bool(Monoid)> f)
 	{
-		vector<const AVLTreeNode *> trace;
+		vector<AVLTreeNode *> trace;
 		trace.reserve((size_t)this->rank + 5);
-		const AVLTreeNode *node = search<REVERSE>(l_key, &trace);
+		AVLTreeNode *node = search<REVERSE>(l_key, &trace);
 		if (!node || !f(node->value)) {
 			return nullptr;
 		}
@@ -231,35 +257,38 @@ struct AVLTreeNode {
 			}
 		}
 	}
-	const Key *min_range_r(Key r_key, function<bool(Monoid)> f) const
+	const Key *min_range_r(Key r_key, function<bool(Monoid)> f)
 	{
 		return min_range<true>(r_key, f);
 	}
-	// update or insert
-	// effect: A[key] = UpdateOp()(A[key], ...)
+	// alter (modify or insert)
+	// effect: A[key] = AlterOp()(A[key], ...)
 	// returns: node pointer
-	template <class UpdateOp, class ...Args>
-	AVLTreeNode *update(Key key, Args ...args)
+	template <class AlterOp, class ...Args>
+	AVLTreeNode *alter(Key key, Args ...args)
 	{
+		propagete_alter_info();
 		AVLTreeNode *ret;
 		if (!(key < this->key) && !(this->key < key)) {
-			this->value = UpdateOp()(this->value, args...);
+			this->value = AlterOp()(this->value, args...);
 			update_sum();
 			return this;
 		} else if (key < this->key) {
 			if (this->left) {
-				ret = this->left->template update<UpdateOp>(key, args...);
+				ret = this->left->template alter<AlterOp>(key, args...);
 			} else {
-				ret = this->left = new AVLTreeNode(key, UpdateOp()(IDENT, args...));
+				ret = this->left = new AVLTreeNode(key, AlterOp()(IDENT, args...));
 			}
 		} else {
 			if (this->right) {
-				ret = this->right->template update<UpdateOp>(key, args...);
+				ret = this->right->template alter<AlterOp>(key, args...);
 			} else {
-				ret = this->right = new AVLTreeNode(key, UpdateOp()(IDENT, args...));
+				ret = this->right = new AVLTreeNode(key, AlterOp()(IDENT, args...));
 			}
 		}
 		update_sum();
+		update_leftmost_rightmost();
+
 		int l_rank = left ? left->rank : 0;
 		int r_rank = right ? right->rank : 0;
 		this->rank = max(l_rank, r_rank) + 1;
@@ -284,6 +313,21 @@ struct AVLTreeNode {
 		int r_rank = right ? right->rank : 0;
 		rank = max(l_rank, r_rank) + 1;
 	}
+	void update_leftmost_rightmost()
+	{
+		if constexpr (LAZY) {
+			if (this->left) {
+				this->lazy_info.leftmost_key = this->left->lazy_info.leftmost_key;
+			} else {
+				this->lazy_info.leftmost_key = this->key;
+			}
+			if (this->right) {
+				this->lazy_info.rightmost_key = this->right->lazy_info.rightmost_key;
+			} else {
+				this->lazy_info.rightmost_key = this->key;
+			}
+		}
+	}
 	// left => new root
 	void rotate_l()
 	{
@@ -300,8 +344,10 @@ struct AVLTreeNode {
 		swap(root->key, node->key);
 		swap(root->value, node->value);
 		node->update_sum();
+		node->update_leftmost_rightmost();
 		node->update_rank();
 		root->update_sum();
+		root->update_leftmost_rightmost();
 		root->update_rank();
 	}
 	// right => new root
@@ -320,19 +366,63 @@ struct AVLTreeNode {
 		swap(root->key, node->key);
 		swap(root->value, node->value);
 		node->update_sum();
+		node->update_leftmost_rightmost();
 		node->update_rank();
 		root->update_sum();
+		root->update_leftmost_rightmost();
 		root->update_rank();
 	}
+	void propagete_alter_info()
+	{
+		if constexpr (LAZY) {
+			if (this->lazy_info.alter_info == AIDENT) {
+				return;
+			}
+			if (this->left) {
+				this->left->lazy_info.alter_info
+					= AAOp()(this->left->lazy_info.alter_info, this->lazy_info.alter_info);
+			}
+			if (this->right) {
+				this->right->lazy_info.alter_info
+					= AAOp()(this->right->lazy_info.alter_info, this->lazy_info.alter_info);
+			}
+			this->value = MAOp()(this->value, this->lazy_info.alter_info);
+			this->lazy_info.alter_info = AIDENT;
+		}
+	}
+	void alter_range(Key l_key, Key r_key, const AlterInfo &alter_info)
+	{
+		static_assert(LAZY, "To use modify_range(), you should complile with LAZY = true");
+		if (r_key < this->lazy_info.leftmost_key || this->lazy_info.rightmost_key < l_key) {
+			return;
+		}
+		propagete_alter_info();
+		if (!(this->lazy_info.leftmost_key < l_key) && !(r_key < this->lazy_info.rightmost_key)) {
+			this->lazy_info.alter_info = alter_info;
+			propagete_alter_info();
+		} else {
+			if (!(this->key < l_key) && !(r_key < this->key)) {
+				this->value = MAOp()(this->value, alter_info);
+			}
+			if (this->left) {
+				this->left->alter_range(l_key, r_key, alter_info);
+			}
+			if (this->right) {
+				this->right->alter_range(l_key, r_key, alter_info);
+			}
+			update_sum();
+		}
+	}
 };
-template <class Key, class Monoid, Monoid IDENT, class Op>
+template <class Key, class Monoid, Monoid IDENT, class Op, bool LAZY, class AlterInfo, AlterInfo AIDENT, class MAOp, class AAOp>
 struct AVLTreeIterator {
-	using Node = AVLTreeNode<Key, Monoid, IDENT, Op>;
+	using Node = AVLTreeNode<Key, Monoid, IDENT, Op, LAZY, AlterInfo, AIDENT, MAOp, AAOp>;
 	vector<Node *> stack;
 	AVLTreeIterator(Node *node)
 	{
 		while (node) {
 			stack.push_back(node);
+			node->propagete_alter_info();
 			node = node->left;
 		}
 	}
@@ -343,6 +433,7 @@ struct AVLTreeIterator {
 			node = node->right;
 			while (node) {
 				stack.push_back(node);
+				node->propagete_alter_info();
 				node = node->left;
 			}
 			return *this;
@@ -372,20 +463,20 @@ struct AVLTreeIterator {
 		return make_pair(stack.back()->key, stack.back()->value);
 	}
 };
-template <class Key = int, class Monoid = int, Monoid IDENT = Monoid(), class Op = plus<Monoid>>
+template <class Key = int, class Monoid = int, Monoid IDENT = Monoid(), class Op = plus<Monoid>, bool LAZY = false, class AlterInfo = int, AlterInfo AIDENT = 0, class MAOp = Op, class AAOp = Op>
 struct AVLTree {
-	using Node = AVLTreeNode<Key, Monoid, IDENT, Op>;
-	using iterator = AVLTreeIterator<Key, Monoid, IDENT, Op>;
+	using Node = AVLTreeNode<Key, Monoid, IDENT, Op, LAZY, AlterInfo, AIDENT, MAOp, AAOp>;
+	using iterator = AVLTreeIterator<Key, Monoid, IDENT, Op, LAZY, AlterInfo, AIDENT, MAOp, AAOp>;
 	Node *root;
 	AVLTree() : root(nullptr) {}
 	~AVLTree() { delete root; }
-	template <class UpdateOp, class ...Args>
-	Node *update(Key key, Args ...args)
+	template <class AlterOp, class ...Args>
+	Node *alter(Key key, Args ...args)
 	{
 		if (root) {
-			return root->template update<UpdateOp>(key, args...);
+			return root->template alter<AlterOp>(key, args...);
 		} else {
-			root = new Node(key, UpdateOp()(IDENT, args...));
+			root = new Node(key, AlterOp()(IDENT, args...));
 			return root;
 		}
 	}
@@ -399,17 +490,17 @@ struct AVLTree {
 				return v_new;
 			}
 		};
-		return update<ReplaceOp, Monoid>(key, value);
+		return alter<ReplaceOp, Monoid>(key, value);
 	}
 	// effect: A[key] = Op(A[key], value)
 	// returns: node pointer
 	Node *apply_op(Key key, Monoid value)
 	{
-		return update<Op, Monoid>(key, value);
+		return alter<Op, Monoid>(key, value);
 	}
 	// effect: A[key] = IDENT
 	// returns: node pointer
-	Node *erase(Key key, Monoid value) const
+	Node *erase(Key key, Monoid value)
 	{
 		if (root) {
 			return root->replace(key, IDENT);
@@ -452,6 +543,12 @@ struct AVLTree {
 	iterator end() const
 	{
 		return iterator(nullptr);
+	}
+	void alter_range(Key l_key, Key r_key, const AlterInfo &alter_info)
+	{
+		if (root) {
+			root->alter_range(l_key, r_key, alter_info);
+		}
 	}
 };
 $end$]]></Code>
