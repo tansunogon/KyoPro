@@ -67,7 +67,7 @@ struct ExtraNodeInfoForLazy {
 	{
 	}
 };
-template <class Key, class Monoid, Monoid IDENT, class Op, bool LAZY, class AlterInfo, AlterInfo AIDENT, class MAOp, class AAOp>
+template <class Key, class Monoid, class IDENT, class Op, bool LAZY, class AlterInfo, class AIDENT, class MAOp, class AAOp>
 struct AVLTreeNode {
 	AVLTreeNode *left;
 	AVLTreeNode *right;
@@ -84,7 +84,7 @@ struct AVLTreeNode {
 		value(value),
 		sum_of_value(value),
 		rank(1),
-		lazy_info(key, key, AIDENT)
+		lazy_info(key, key, AIDENT())
 	{
 	}
 	~AVLTreeNode() { delete left; delete right; }
@@ -97,7 +97,8 @@ struct AVLTreeNode {
 	template <bool REVERSE = false>
 	bool greater_than(Key key) const { return !REVERSE ? (this->key > key) : (this->key < key); }
 	// returns: Op_{k} A[k]
-	Monoid sum() {
+	Monoid sum()
+	{
 		propagete_alter_info();
 		return sum_of_value;
 	}
@@ -105,18 +106,18 @@ struct AVLTreeNode {
 	template <bool REVERSE = false>
 	Monoid lower_sum(Key key)
 	{
-		Monoid s = IDENT;
+		Monoid s = IDENT();
 		AVLTreeNode *node = this;
 		while (node) {
 			node->propagete_alter_info();
 			if (!(key < node->key) && !(node->key < key)) {
-				s = Op()(s, node->get_left<REVERSE>() ? node->get_left<REVERSE>()->sum() : IDENT);
+				s = Op()(s, node->get_left<REVERSE>() ? node->get_left<REVERSE>()->sum() : IDENT());
 				s = Op()(s, node->value);
 				break;
 			} else if (node->greater_than<REVERSE>(key)) {
 				node = node->get_left<REVERSE>();
 			} else {
-				s = Op()(s, node->get_left<REVERSE>() ? node->get_left<REVERSE>()->sum() : IDENT);
+				s = Op()(s, node->get_left<REVERSE>() ? node->get_left<REVERSE>()->sum() : IDENT());
 				s = Op()(s, node->value);
 				node = node->get_right<REVERSE>();
 			}
@@ -138,20 +139,20 @@ struct AVLTreeNode {
 				node = node->right;
 			} else if (!(l_key < node->key)) { // node->key == l_key
 				Monoid s = node->value;
-				return Op()(s, node->right ? node->right->lower_sum(r_key) : IDENT);
+				return Op()(s, node->right ? node->right->lower_sum(r_key) : IDENT());
 			} else if (node->key < r_key) { // l_key < node->key < r_key
 				Monoid s = node->value;
-				s = Op()(s, node->left ? node->left->upper_sum(l_key) : IDENT);
-				s = Op()(s, node->right ? node->right->lower_sum(r_key) : IDENT);
+				s = Op()(s, node->left ? node->left->upper_sum(l_key) : IDENT());
+				s = Op()(s, node->right ? node->right->lower_sum(r_key) : IDENT());
 				return s;
 			} else if (!(r_key < node->key)) { // node->key == r_key
 				Monoid s = node->value;
-				return Op()(s, node->left ? node->left->upper_sum(l_key) : IDENT);
+				return Op()(s, node->left ? node->left->upper_sum(l_key) : IDENT());
 			} else { // r_key < node->key
 				node = node->left;
 			}
 		}
-		return IDENT;
+		return IDENT();
 	}
 	// search the node whose key is key
 	// returns: node pointer
@@ -277,13 +278,13 @@ struct AVLTreeNode {
 			if (this->left) {
 				ret = this->left->template alter<AlterOp>(key, args...);
 			} else {
-				ret = this->left = new AVLTreeNode(key, AlterOp()(IDENT, args...));
+				ret = this->left = new AVLTreeNode(key, AlterOp()(IDENT(), args...));
 			}
 		} else {
 			if (this->right) {
 				ret = this->right->template alter<AlterOp>(key, args...);
 			} else {
-				ret = this->right = new AVLTreeNode(key, AlterOp()(IDENT, args...));
+				ret = this->right = new AVLTreeNode(key, AlterOp()(IDENT(), args...));
 			}
 		}
 		update_sum();
@@ -303,8 +304,8 @@ struct AVLTreeNode {
 	}
 	void update_sum()
 	{
-		Monoid l_sum = left ? left->sum() : IDENT;
-		Monoid r_sum = right ? right->sum() : IDENT;
+		Monoid l_sum = left ? left->sum() : IDENT();
+		Monoid r_sum = right ? right->sum() : IDENT();
 		sum_of_value = Op()(Op()(value, l_sum), r_sum);
 	}
 	void update_rank()
@@ -375,7 +376,7 @@ struct AVLTreeNode {
 	void propagete_alter_info()
 	{
 		if constexpr (LAZY) {
-			if (this->lazy_info.alter_info == AIDENT) {
+			if (this->lazy_info.alter_info == AIDENT()) {
 				return;
 			}
 			if (this->left) {
@@ -387,7 +388,7 @@ struct AVLTreeNode {
 					= AAOp()(this->right->lazy_info.alter_info, this->lazy_info.alter_info);
 			}
 			this->value = MAOp()(this->value, this->lazy_info.alter_info);
-			this->lazy_info.alter_info = AIDENT;
+			this->lazy_info.alter_info = AIDENT();
 		}
 	}
 	void alter_range(Key l_key, Key r_key, const AlterInfo &alter_info)
@@ -414,7 +415,7 @@ struct AVLTreeNode {
 		}
 	}
 };
-template <class Key, class Monoid, Monoid IDENT, class Op, bool LAZY, class AlterInfo, AlterInfo AIDENT, class MAOp, class AAOp>
+template <class Key, class Monoid, class IDENT, class Op, bool LAZY, class AlterInfo, class AIDENT, class MAOp, class AAOp>
 struct AVLTreeIterator {
 	using Node = AVLTreeNode<Key, Monoid, IDENT, Op, LAZY, AlterInfo, AIDENT, MAOp, AAOp>;
 	vector<Node *> stack;
@@ -463,7 +464,7 @@ struct AVLTreeIterator {
 		return make_pair(stack.back()->key, stack.back()->value);
 	}
 };
-template <class Key = int, class Monoid = int, Monoid IDENT = Monoid(), class Op = plus<Monoid>, bool LAZY = false, class AlterInfo = int, AlterInfo AIDENT = 0, class MAOp = Op, class AAOp = Op>
+template <class Key = int, class Monoid = int, class IDENT = Monoid, class Op = plus<Monoid>, bool LAZY = false, class AlterInfo = int, class AIDENT = AlterInfo, class MAOp = Op, class AAOp = Op>
 struct AVLTree {
 	using Node = AVLTreeNode<Key, Monoid, IDENT, Op, LAZY, AlterInfo, AIDENT, MAOp, AAOp>;
 	using iterator = AVLTreeIterator<Key, Monoid, IDENT, Op, LAZY, AlterInfo, AIDENT, MAOp, AAOp>;
@@ -476,7 +477,7 @@ struct AVLTree {
 		if (root) {
 			return root->template alter<AlterOp>(key, args...);
 		} else {
-			root = new Node(key, AlterOp()(IDENT, args...));
+			root = new Node(key, AlterOp()(IDENT(), args...));
 			return root;
 		}
 	}
@@ -498,12 +499,12 @@ struct AVLTree {
 	{
 		return alter<Op, Monoid>(key, value);
 	}
-	// effect: A[key] = IDENT
+	// effect: A[key] = IDENT()
 	// returns: node pointer
 	Node *erase(Key key, Monoid value)
 	{
 		if (root) {
-			return root->replace(key, IDENT);
+			return root->replace(key, IDENT());
 		} else {
 			return nullptr;
 		}
@@ -511,22 +512,22 @@ struct AVLTree {
 	// returns: Op_{k} A[k]
 	Monoid sum() const
 	{
-		return root ? root->sum() : IDENT;
+		return root ? root->sum() : IDENT();
 	}
 	// returns: Op_{k<=key} A[k]
 	Monoid lower_sum(Key key) const
 	{
-		return root ? root->lower_sum(key) : IDENT;
+		return root ? root->lower_sum(key) : IDENT();
 	}
 	// returns: Op_{key<=k} A[k]
 	Monoid upper_sum(Key key) const
 	{
-		return root ? root->upper_sum(key) : IDENT;
+		return root ? root->upper_sum(key) : IDENT();
 	}
 	// returns: Op_{l_key<=key<=r_key} A[k]
 	Monoid range_sum(Key l_key, Key r_key) const
 	{
-		return root ? root->range_sum(l_key, r_key) : IDENT;
+		return root ? root->range_sum(l_key, r_key) : IDENT();
 	}
 	const Key *min_range(Key l_key, function<bool(Monoid)> f) const
 	{
