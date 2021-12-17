@@ -379,34 +379,6 @@ struct AVLTree {
 	Node *root;
 	AVLTree() : root(nullptr) {}
 	~AVLTree() { delete root; }
-	// returns: Op_{key<=k} A[k]
-	Monoid sum() const
-	{
-		return root ? root->sum() : IDENT;
-	}
-	// returns: Op_{k<=key} A[k]
-	Monoid lower_sum(Key key) const
-	{
-		return root ? root->lower_sum(key) : IDENT;
-	}
-	// returns: Op_{key<=k} A[k]
-	Monoid upper_sum(Key key) const
-	{
-		return root ? root->upper_sum(key) : IDENT;
-	}
-	// returns: Op_{l_key<=key<=r_key} A[k]
-	Monoid range_sum(Key l_key, Key r_key) const
-	{
-		return root ? root->range_sum(l_key, r_key) : IDENT;
-	}
-	const Key *min_range(Key l_key, function<bool(Monoid)> f) const
-	{
-		return root ? root->min_range(l_key, f) : nullptr;
-	}
-	const Key *min_range_r(Key r_key, function<bool(Monoid)> f) const
-	{
-		return root ? root->min_range_r(r_key, f) : nullptr;
-	}
 	template <class UpdateOp, class ...Args>
 	Node *update(Key key, Args ...args)
 	{
@@ -444,6 +416,34 @@ struct AVLTree {
 		} else {
 			return nullptr;
 		}
+	}
+	// returns: Op_{k} A[k]
+	Monoid sum() const
+	{
+		return root ? root->sum() : IDENT;
+	}
+	// returns: Op_{k<=key} A[k]
+	Monoid lower_sum(Key key) const
+	{
+		return root ? root->lower_sum(key) : IDENT;
+	}
+	// returns: Op_{key<=k} A[k]
+	Monoid upper_sum(Key key) const
+	{
+		return root ? root->upper_sum(key) : IDENT;
+	}
+	// returns: Op_{l_key<=key<=r_key} A[k]
+	Monoid range_sum(Key l_key, Key r_key) const
+	{
+		return root ? root->range_sum(l_key, r_key) : IDENT;
+	}
+	const Key *min_range(Key l_key, function<bool(Monoid)> f) const
+	{
+		return root ? root->min_range(l_key, f) : nullptr;
+	}
+	const Key *min_range_r(Key r_key, function<bool(Monoid)> f) const
+	{
+		return root ? root->min_range_r(r_key, f) : nullptr;
 	}
 	iterator begin() const
 	{
