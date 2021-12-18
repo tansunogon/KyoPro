@@ -38,14 +38,14 @@
 //            output: Op_{L<=k<=R} A[k]
 //            For example, if Op = add, then calculate
 //                sum_{L<=k<=R} A[k]
-//         4. Search minimum range
+//         4. Search maximum range
 //            input: L, function F: value -> {true, false}
 //                   Function F should have the following property:
 //                       For all p, q. L < p < q.
 //                           F(Op_{L<=k<=q} A[k]) => F(Op_{L<=k<=p} A[k])
-//            output: minimum r, where F(Op_{L<=k<=r} A[k])
-//            For example, if Op = add and F(v)=(10<=v), then search
-//                minimum r, where 10 <= sum_{L<=k<=r} A[k]
+//            output: maximum r, where F(Op_{L<=k<=r} A[k])
+//            For example, if Op = add and F(v)=(10>=v), then search
+//                maximum r, where 10 >= sum_{L<=k<=r} A[k]
 //
 // Segment Tree can solve the same problems,
 // but AVL tree has the advantage that there is no need to compress coordinates.
@@ -217,7 +217,7 @@ struct AVLTreeNode {
 		return rightmost<!REVERSE>(trace);
 	}
 	template <bool REVERSE = false>
-	const Key *min_range(Key l_key, function<bool(Monoid)> f)
+	const Key *max_range(Key l_key, function<bool(Monoid)> f)
 	{
 		vector<AVLTreeNode *> trace;
 		trace.reserve((size_t)this->rank + 5);
@@ -258,9 +258,9 @@ struct AVLTreeNode {
 			}
 		}
 	}
-	const Key *min_range_r(Key r_key, function<bool(Monoid)> f)
+	const Key *max_range_r(Key r_key, function<bool(Monoid)> f)
 	{
-		return min_range<true>(r_key, f);
+		return max_range<true>(r_key, f);
 	}
 	// alter (modify or insert)
 	// effect: A[key] = AlterOp()(A[key], ...)
@@ -609,13 +609,13 @@ struct AVLTree {
 	{
 		return root ? root->range_sum(l_key, r_key) : IDENT();
 	}
-	const Key *min_range(Key l_key, function<bool(Monoid)> f) const
+	const Key *max_range(Key l_key, function<bool(Monoid)> f) const
 	{
-		return root ? root->min_range(l_key, f) : nullptr;
+		return root ? root->max_range(l_key, f) : nullptr;
 	}
-	const Key *min_range_r(Key r_key, function<bool(Monoid)> f) const
+	const Key *max_range_r(Key r_key, function<bool(Monoid)> f) const
 	{
-		return root ? root->min_range_r(r_key, f) : nullptr;
+		return root ? root->max_range_r(r_key, f) : nullptr;
 	}
 	iterator begin() const
 	{
