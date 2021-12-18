@@ -220,10 +220,45 @@
           </Function>
         </Literal>
       </Declarations>
-      <Code Language="cpp" Delimiter="$"><![CDATA[AVLTree<
-	/*Key*/$int$, /*Monoid*/$m$, /*IDENT*/$m$, /*Op*/$mmop$,
-	/*LAZY*/true, /*AlterInfo*/$bool$, /*AIDENT*/$bool$,
-	/*MAOp*/$maop$, /*AAOp*/$aaop$
+      <Code Language="cpp" Delimiter="$"><![CDATA[struct M {
+	long long s[2] = {};
+	int count[2] = {};
+};
+struct MMop {
+	M operator()(M a, M b)
+	{
+		return M {
+			{a.s[0] + b.s[0] + (long long)a.count[1] * b.count[0], a.s[1] + b.s[1] + (long long)a.count[0] * b.count[1]},
+			{a.count[0] + b.count[0], a.count[1] + b.count[1]}};
+	}
+};
+struct AltInfo {
+	bool v = false;
+	bool operator==(const AltInfo &rhs) const
+	{
+		return v == rhs.v;
+	}
+};
+struct MAop {
+	M operator()(M m, AltInfo a)
+	{
+		if (a.v) {
+			return M {{m.s[1], m.s[0]}, {m.count[1], m.count[0]}};
+		} else {
+			return m;
+		}
+	}
+};
+struct AAop {
+	AltInfo operator()(AltInfo existing, AltInfo applying)
+	{
+		return AltInfo {bit_xor<bool>()(existing.v, applying.v)};
+	}
+};
+AVLTree<
+	/*Key*/int, /*Monoid*/M, /*IDENT*/M, /*Op*/MMop,
+	/*LAZY*/true, /*AlterInfo*/AltInfo, /*AIDENT*/AltInfo,
+	/*MAOp*/MAop, /*AAOp*/AAop
 > tree;
 $end$]]></Code>
     </Snippet>
