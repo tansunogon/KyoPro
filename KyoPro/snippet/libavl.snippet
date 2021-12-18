@@ -465,12 +465,13 @@ struct AVLTreeNode {
 					= AAOp()(this->right->lazy_info.alter_info, this->lazy_info.alter_info);
 			}
 			this->value = MAOp()(this->value, this->lazy_info.alter_info);
+			this->sum_of_value = MAOp()(this->sum_of_value, this->lazy_info.alter_info);
 			this->lazy_info.alter_info = AIDENT();
 		}
 	}
 	void alter_range(Key l_key, Key r_key, const AlterInfo &alter_info)
 	{
-		static_assert(LAZY, "To use modify_range(), you should complile with LAZY = true");
+		static_assert(LAZY, "To use alter_range(), you should complile with LAZY = true");
 		if (r_key < this->lazy_info.leftmost_key || this->lazy_info.rightmost_key < l_key) {
 			return;
 		}
@@ -625,7 +626,7 @@ struct AVLTree {
 	{
 		return iterator(nullptr);
 	}
-	void alter_range(Key l_key, Key r_key, const AlterInfo &alter_info)
+	void alter_range(Key l_key, Key r_key, AlterInfo alter_info)
 	{
 		if (root) {
 			root->alter_range(l_key, r_key, alter_info);
