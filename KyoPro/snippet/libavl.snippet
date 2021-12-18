@@ -103,31 +103,51 @@ struct AVLTreeNode {
 		return sum_of_value;
 	}
 	// returns: Op_{k<=key} A[k]
-	template <bool REVERSE = false>
 	Monoid lower_sum(Key key)
 	{
-		Monoid s = IDENT();
 		AVLTreeNode *node = this;
 		while (node) {
 			node->propagete_alter_info();
-			if (!(key < node->key) && !(node->key < key)) {
-				s = Op()(s, node->get_left<REVERSE>() ? node->get_left<REVERSE>()->sum() : IDENT());
+			if (node->greater_than(key)) {
+				node = node->get_left();
+			} else if (!(key < node->key) && !(node->key < key)) {
+				Monoid s = node->get_left() ? node->get_left()->sum() : IDENT();
 				s = Op()(s, node->value);
-				break;
-			} else if (node->greater_than<REVERSE>(key)) {
-				node = node->get_left<REVERSE>();
+				return s;
 			} else {
-				s = Op()(s, node->get_left<REVERSE>() ? node->get_left<REVERSE>()->sum() : IDENT());
+				Monoid s = node->get_left() ? node->get_left()->sum() : IDENT();
 				s = Op()(s, node->value);
-				node = node->get_right<REVERSE>();
+				if (node->get_right()) {
+					s = Op()(s, node->get_right()->lower_sum(key));
+				}
+				return s;
 			}
 		}
-		return s;
+		return IDENT();
 	}
 	// returns: Op_{key<=k} A[k]
 	Monoid upper_sum(Key key)
 	{
-		return lower_sum<true>(key);
+		AVLTreeNode *node = this;
+		while (node) {
+			node->propagete_alter_info();
+			if (node->less_than(key)) {
+				node = node->get_right();
+			} else if (!(key < node->key) && !(node->key < key)) {
+				Monoid s = node->value;
+				s = Op()(s, node->get_right() ? node->get_right()->sum() : IDENT());
+				return s;
+			} else {
+				Monoid s = IDENT();
+				if (node->get_left()) {
+					s = node->get_left()->upper_sum(key);
+				}
+				s = Op()(s, node->value);
+				s = Op()(s, node->get_right() ? node->get_right()->sum() : IDENT());
+				return s;
+			}
+		}
+		return IDENT();
 	}
 	// returns: Op_{l_key<=key<=r_key} A[k]
 	Monoid range_sum(Key l_key, Key r_key)
@@ -141,13 +161,13 @@ struct AVLTreeNode {
 				Monoid s = node->value;
 				return Op()(s, node->right ? node->right->lower_sum(r_key) : IDENT());
 			} else if (node->key < r_key) { // l_key < node->key < r_key
-				Monoid s = node->value;
-				s = Op()(s, node->left ? node->left->upper_sum(l_key) : IDENT());
+				Monoid s = node->left ? node->left->upper_sum(l_key) : IDENT();
+				s = Op()(s, node->value);
 				s = Op()(s, node->right ? node->right->lower_sum(r_key) : IDENT());
 				return s;
 			} else if (!(r_key < node->key)) { // node->key == r_key
-				Monoid s = node->value;
-				return Op()(s, node->left ? node->left->upper_sum(l_key) : IDENT());
+				Monoid s = node->left ? node->left->upper_sum(l_key) : IDENT();
+				return Op()(s, node->value);
 			} else { // r_key < node->key
 				node = node->left;
 			}
@@ -383,7 +403,7 @@ struct AVLTreeNode {
 	{
 		Monoid l_sum = left ? left->sum() : IDENT();
 		Monoid r_sum = right ? right->sum() : IDENT();
-		sum_of_value = Op()(Op()(value, l_sum), r_sum);
+		sum_of_value = Op()(Op()(l_sum, value), r_sum);
 	}
 	void update_rank()
 	{
