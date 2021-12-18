@@ -101,6 +101,10 @@ namespace mod {
 			v = (v * rhs.inv().v) % MOD;
 			return *this;
 		}
+		bool operator==(const Mint &rhs) const
+		{
+			return v == rhs.v;
+		}
 		friend std::ostream &operator<<(std::ostream &os, const Mint<MOD> obj)
 		{
 			return os << obj.v;
