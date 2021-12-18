@@ -161,6 +161,7 @@
     <None Include="snippet\cmats.snippet" />
     <None Include="snippet\davl.snippet" />
     <None Include="snippet\davll.snippet" />
+    <None Include="snippet\davllaffin.snippet" />
     <None Include="snippet\davlmin.snippet" />
     <None Include="snippet\ddxdy.snippet" />
     <None Include="snippet\dmax.snippet" />

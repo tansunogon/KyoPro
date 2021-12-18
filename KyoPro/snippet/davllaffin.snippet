@@ -1,0 +1,58 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<CodeSnippets xmlns="http://schemas.microsoft.com/VisualStudio/2005/CodeSnippet">
+  <CodeSnippet Format="1.0.0">
+    <Header>
+      <SnippetTypes>
+        <SnippetType>Expansion</SnippetType>
+      </SnippetTypes>
+      <Title>davllaffin</Title>
+      <Author>
+      </Author>
+      <Description>
+      </Description>
+      <HelpUrl>
+      </HelpUrl>
+      <Shortcut>davllaffin</Shortcut>
+    </Header>
+    <Snippet>
+      <Code Language="cpp" Delimiter="$"><![CDATA[struct M {
+	mod::mint998 s;
+	mod::mint998 count;
+};
+struct MMop {
+	M operator()(M a, M b)
+	{
+		return M {a.s + b.s, a.count + b.count};
+	}
+};
+struct AltInfo {
+	mod::mint998 b;
+	mod::mint998 c;
+	AltInfo(mod::mint998 b, mod::mint998 c) : b(b), c(c) {}
+	AltInfo() : b(1), c(0) {}
+	bool operator==(const AltInfo &rhs) const
+	{
+		return b == rhs.b && c == rhs.c;
+	}
+};
+struct MAop {
+	M operator()(M m, AltInfo a)
+	{
+		return M {m.s * a.b + m.count * a.c, m.count};
+	}
+};
+struct AAop {
+	AltInfo operator()(AltInfo existing, AltInfo applying)
+	{
+		return AltInfo {existing.b * applying.b, existing.c * applying.b + applying.c};
+	}
+};
+AVLTree<
+	/*Key*/int, /*Monoid*/M, /*IDENT*/M, /*Op*/MMop,
+	/*LAZY*/true, /*AlterInfo*/AltInfo, /*AIDENT*/AltInfo,
+	/*MAOp*/MAop, /*AAOp*/AAop
+> tree;
+$end$]]></Code>
+    </Snippet>
+  </CodeSnippet>
+</CodeSnippets>
