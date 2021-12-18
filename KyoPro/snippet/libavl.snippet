@@ -302,6 +302,83 @@ struct AVLTreeNode {
 
 		return ret;
 	}
+	void erase(Key key)
+	{
+		vector<AVLTreeNode *> trace;
+		AVLTreeNode *node = search(key, &trace);
+		if (!node || node->key != key) {
+			return;
+		}
+		// assign new_content to base_node, and delete new_content
+		auto assign_and_delete = [](AVLTreeNode *base_node, AVLTreeNode *new_content) {
+			new_content->propagete_alter_info();
+			swap(base_node->key, new_content->key);
+			swap(base_node->value, new_content->value);
+			swap(base_node->left, new_content->left);
+			swap(base_node->right, new_content->right);
+			new_content->left = nullptr;
+			new_content->right = nullptr;
+			delete new_content;
+			base_node->update_sum();
+			base_node->update_leftmost_rightmost();
+			base_node->update_rank();
+		};
+		auto update_parent = [&]() {
+			for (auto itr = trace.rbegin(); itr != trace.rend(); ++itr) {
+				(*itr)->update_sum();
+				(*itr)->update_leftmost_rightmost();
+				(*itr)->update_rank();
+			}
+		};
+		if (!node->left && !node->right) {
+			if (trace.back()->left == node) {
+				trace.back()->left = nullptr;
+			} else {
+				assert(trace.back()->right == node);
+				trace.back()->right = nullptr;
+			}
+			delete node;
+			update_parent();
+			return;
+		}
+		if (!node->left) {
+			assign_and_delete(node, node->right);
+			update_parent();
+			return;
+		}
+		if (!node->right) {
+			assign_and_delete(node, node->left);
+			update_parent();
+			return;
+		}
+		if (node->left->rank < node->right->rank) {
+			trace.push_back(node);
+			AVLTreeNode *lmost = node->right->leftmost(&trace);
+			if (trace.back() == node) {
+				trace.back()->right = lmost->right;
+			} else {
+				trace.back()->left = lmost->right;
+			}
+			lmost->right = nullptr;
+			swap(node->key, lmost->key);
+			swap(node->value, lmost->value);
+			delete lmost;
+			update_parent();
+		} else {
+			trace.push_back(node);
+			AVLTreeNode *rmost = node->left->rightmost(&trace);
+			if (trace.back() == node) {
+				trace.back()->left = rmost->left;
+			} else {
+				trace.back()->right = rmost->left;
+			}
+			rmost->left = nullptr;
+			swap(node->key, rmost->key);
+			swap(node->value, rmost->value);
+			delete rmost;
+			update_parent();
+		}
+	}
 	void update_sum()
 	{
 		Monoid l_sum = left ? left->sum() : IDENT();
@@ -499,15 +576,18 @@ struct AVLTree {
 	{
 		return alter<Op, Monoid>(key, value);
 	}
-	// effect: A[key] = IDENT()
-	// returns: node pointer
-	Node *erase(Key key, Monoid value)
+	// effect: erase A[key]
+	void erase(Key key)
 	{
-		if (root) {
-			return root->replace(key, IDENT());
-		} else {
-			return nullptr;
+		if (!root) {
+			return;
 		}
+		if (root->key == key && !root->left && !root->right) {
+			delete root;
+			root = nullptr;
+			return;
+		}
+		root->erase(key);
 	}
 	// returns: Op_{k} A[k]
 	Monoid sum() const
